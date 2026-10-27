@@ -24,9 +24,9 @@ built as a custom web application and integrated with the
 
 | Document | What's in it |
 |---|---|
-| **[docs/ESCAPP_SETUP.md](docs/ESCAPP_SETUP.md)** | Creating the escape room, configuring the five puzzles and their solutions, attaching the app, local development, troubleshooting |
-| **[docs/TEACHER_GUIDE.md](docs/TEACHER_GUIDE.md)** | Full mathematical solutions, expected decisions, timings, facilitation notes, debrief questions |
-| **[docs/ESCAPP_HINTS.md](docs/ESCAPP_HINTS.md)** | The three hints per puzzle to paste into Escapp |
+| **[guides/ESCAPP_SETUP.md](guides/ESCAPP_SETUP.md)** | Creating the escape room, configuring the five puzzles and their solutions, attaching the app, local development, troubleshooting |
+| **[guides/TEACHER_GUIDE.md](guides/TEACHER_GUIDE.md)** | Full mathematical solutions, expected decisions, timings, facilitation notes, debrief questions |
+| **[guides/ESCAPP_HINTS.md](guides/ESCAPP_HINTS.md)** | The three hints per puzzle to paste into Escapp |
 
 ---
 
@@ -45,12 +45,37 @@ simulated run can never be mistaken for a real one.
 ```bash
 npm test               # 55 tests: mathematics, progression, playthrough, failure modes
 npm run typecheck      # strict TypeScript
-npm run build          # production bundle into dist/
+npm run build          # production bundle into docs/ (also the Pages site)
 npm run preview        # serve the production build
 ```
 
 To run against a real escape room, copy `config.example.mjs` to `config.mjs` and
-set your endpoint: see [docs/ESCAPP_SETUP.md](docs/ESCAPP_SETUP.md) §5.
+set your endpoint: see [guides/ESCAPP_SETUP.md](guides/ESCAPP_SETUP.md) §5.
+
+---
+
+## Deploying
+
+`npm run build` writes the bundle to **`docs/`**, which is both the folder to
+hand to Escapp and the folder GitHub Pages serves from. So one build does both
+jobs.
+
+- **GitHub Pages:** Settings → Pages → Source: *Deploy from a branch*, branch
+  `main`, folder `/docs`. The published URL is then
+  `https://<user>.github.io/<repo>/`.
+- **Escapp:** upload the contents of `docs/`, keeping `escapp.js`,
+  `css/` and `media/` next to `index.html`.
+
+`docs/` is committed on purpose, so the deployable build is always in the repo.
+Rebuild and commit it alongside any source change or the published page goes
+stale.
+
+The bundle uses **relative asset paths**, so it works unchanged at a Pages
+project subpath, at a domain root, or wherever Escapp mounts it. A `.nojekyll`
+marker is included so Pages serves every file as-is.
+
+The written guides live in **`guides/`**, not `docs/`: Vite empties its output
+directory on every build, so documentation kept there would be deleted.
 
 ---
 
@@ -65,7 +90,7 @@ set your endpoint: see [docs/ESCAPP_SETUP.md](docs/ESCAPP_SETUP.md) §5.
 | 5 | Emergency Release | **The tangent itself** | Students build a tangent on the pressure curve and read its gradient; chord mode shows it arising as a limit |
 
 Answers and worked solutions are in the
-[teacher guide](docs/TEACHER_GUIDE.md); not here, so this file can be shared.
+[teacher guide](guides/TEACHER_GUIDE.md); not here, so this file can be shared.
 
 ---
 
@@ -261,7 +286,8 @@ tests/
   model.test.ts           # mathematical integrity
   progression.test.ts     # linear unlocking, puzzle wiring, state tampering
   playthrough.test.ts     # full runs, wrong answers, refresh, outages
-docs/                     # Escapp setup guide, teacher guide
+guides/                   # Escapp setup, teacher guide, hints, intro script
+docs/                     # BUILD OUTPUT, served by GitHub Pages
 public/                   # escapp.js + its CSS/images (runtime assets)
 ```
 
@@ -290,4 +316,4 @@ the room scenes and animations, and a live end-to-end run against a real Escapp
 server instance. The production adapter is written strictly against the
 verified client API surface, but a real-server smoke test is the one thing worth
 doing before class; the checklist in
-[docs/ESCAPP_SETUP.md](docs/ESCAPP_SETUP.md) §6 covers it.
+[guides/ESCAPP_SETUP.md](guides/ESCAPP_SETUP.md) §6 covers it.

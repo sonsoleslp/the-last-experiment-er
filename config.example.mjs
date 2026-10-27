@@ -6,7 +6,7 @@
 // it is bundled into client-side code.
 //
 // The escape room must have 5 puzzles configured with the solutions documented
-// in src/escapp/puzzles.ts and docs/ESCAPP_SETUP.md:
+// in src/escapp/puzzles.ts and guides/ESCAPP_SETUP.md:
 //   1: 417        2: 3        3: MAINTAIN        4: 3;15;-2        5: 22;11;RELEASE
 export let ESCAPP_APP_SETTINGS = {
   // App language. Currently "en" only.

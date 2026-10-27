@@ -12,7 +12,7 @@
  * script and the code cannot drift apart.
  *
  * The captions are the narration script verbatim. The generated timings are
- * printed in docs/INTRO_SCRIPT.md; in audio mode the captions follow the real
+ * printed in guides/INTRO_SCRIPT.md; in audio mode the captions follow the real
  * audio clock, so a narrator's own pacing wins over these estimates.
  */
 

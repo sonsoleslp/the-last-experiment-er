@@ -6,7 +6,7 @@
  * Escapp; not this app: is the authority on whether a stage is complete.
  *
  * Configure these five solutions in your escape room exactly as listed in the
- * `solution` fields below. See docs/ESCAPP_SETUP.md.
+ * `solution` fields below. See guides/ESCAPP_SETUP.md.
  *
  * Note that every solution is a value the players genuinely established:
  * a badge number they found, a machine setting they calibrated, an

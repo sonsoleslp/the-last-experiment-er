@@ -4,7 +4,7 @@ Drop either file here and the intro picks it up automatically. Neither is
 required — without them the intro plays with on-screen captions only.
 
 - `intro.mp3` — narration audio. Script, timings and recording notes are in
-  `docs/INTRO_SCRIPT.md`.
+  `guides/INTRO_SCRIPT.md`.
 - `intro.mp4` — a finished video. Takes priority over the audio and plays
   full-bleed.
 

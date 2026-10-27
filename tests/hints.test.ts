@@ -1,7 +1,7 @@
 /**
  * The Escapp hint text.
  *
- * Hints are configured in Escapp rather than in the app, so docs/ESCAPP_HINTS.md
+ * Hints are configured in Escapp rather than in the app, so guides/ESCAPP_HINTS.md
  * is the source a teacher pastes from. That makes it worth checking: a hint
  * that leaks an answer quietly destroys the stage it belongs to, and nothing
  * else in the build would notice.
@@ -10,7 +10,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const raw = readFileSync('docs/ESCAPP_HINTS.md', 'utf8');
+const raw = readFileSync('guides/ESCAPP_HINTS.md', 'utf8');
 /** Markdown hard-wraps at 80 columns, so phrases span newlines. */
 const doc = raw.replace(/\s+/g, ' ');
 

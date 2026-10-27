@@ -91,7 +91,7 @@ they appear in Escapp's own UI:
 ## 3. Hints
 
 **Hints are configured in Escapp, not in the app.** Add three per puzzle, in
-order, from **[docs/ESCAPP_HINTS.md](ESCAPP_HINTS.md)**, and set the escape
+order, from **[guides/ESCAPP_HINTS.md](ESCAPP_HINTS.md)**, and set the escape
 room's hint allowance to taste.
 
 The app has no hint button, deliberately. The Escapp client library exposes no
@@ -302,7 +302,7 @@ Fault injection, for checking the reconnection UI:
 
 - [ ] Escape room created; endpoint id noted.
 - [ ] Exactly **five** puzzles, in order, with the solutions from the table above.
-- [ ] Three hints per puzzle, pasted from [docs/ESCAPP_HINTS.md](ESCAPP_HINTS.md), and a hint allowance set.
+- [ ] Three hints per puzzle, pasted from [guides/ESCAPP_HINTS.md](ESCAPP_HINTS.md), and a hint allowance set.
 - [ ] `rtc: true` so team synchronisation works (preview forces it off).
 - [ ] Solutions copied exactly: especially `3;15;-2` and `22;11;RELEASE`.
 - [ ] Duration set (60 min suggested) and teams created (3–4 students).

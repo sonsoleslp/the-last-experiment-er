@@ -5,7 +5,7 @@
  * requested through Escapp's own interface, which is where its hint allowance,
  * scoring and monitoring live. The client library exposes no hint API, so an
  * in-app hint panel could only ever be a second, untracked hint system running
- * alongside the real one. See docs/ESCAPP_HINTS.md for the text to paste in.
+ * alongside the real one. See guides/ESCAPP_HINTS.md for the text to paste in.
  *
  * Design rule: the scene IS the page. There is no scrolling and nothing is
  * stacked below the artwork. A single HUD line carries where you are, what you

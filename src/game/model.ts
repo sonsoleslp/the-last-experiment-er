@@ -243,7 +243,7 @@ export const formatRate = (r: number): string =>
  * -k times the pressure on the gauge.
  *
  * Teaching note: this needs d/dt e^(kt) = k e^(kt), which is a step beyond the
- * polynomial work in stages 2-4. See docs/TEACHER_GUIDE.md.
+ * polynomial work in stages 2-4. See guides/TEACHER_GUIDE.md.
  */
 
 /** Chamber over-pressure at the moment the vent opens, kPa. */
