@@ -239,6 +239,46 @@ per-person preference rather than progress.
 If you need to force a clean slate without restarting the room, clear the site
 data for the page in the browser, or just restart the turn in Escapp.
 
+## 3d. Forcing a clean slate: `?reset=1`
+
+Open the app with **`?reset=1`** and everything that browser remembers is
+wiped before anything reads it:
+
+```
+https://your-host/the-last-experiment/?reset=1
+```
+
+Use it when handing a machine to a new team, or after resetting a team's
+progress in Escapp. It works in every mode, including `?mock=1`, and needs
+nothing from the server. The sound on/off choice is kept, being a preference
+rather than progress; the stored login goes, so the team signs in again.
+
+The parameter removes itself from the URL afterwards, so a later refresh is not
+another reset.
+
+### Why this is manual rather than automatic
+
+Resetting a team's progress on the server really does delete their solved
+puzzles (`teamController.resetProgress` destroys the `retosSuperados` rows and
+clears the team's start time). The problem is on the way back:
+
+- The client only moves progress forward. `_isStateNewestThan` counts a state
+  as newer only when it has **more** solved puzzles, so it judges the emptied
+  server list to be out of date.
+- `_updateErStates` is then called with `_getNewestState()`, which in that
+  situation returns the **stale local state**, and it clears `remoteErState` on
+  the way through.
+
+So by the time the app's callback runs, the server's real list is gone and
+every number the app can see is the stale one. There is no honest way for the
+app to detect the reset from what it is given, which is why the lever is
+manual.
+
+What *does* work automatically: **restarting the turn** in Escapp. That gives
+the team a new start time, which the client does notice, and the app wipes
+itself. Resetting a single team inside a running turn is the case that needs
+`?reset=1`.
+
 ## 4. Attach the application
 
 ### Option A: hosted by Escapp (recommended for class use)
@@ -417,4 +457,4 @@ are completely different. Each one also prints the adapter's specific diagnosis.
 | A teammate sees a stage as verified but has no way onward | Was a bug: the proceed control was gated on local state the teammate had never built, so it showed "✓ Verified" with no button | Fixed. A verified stage now always offers a way forward, and teammates are carried along automatically |
 | The last stage opens saying the vent valve is already spent | Was a bug: local stage state persisted across playthroughs with no run or version scoping | Fixed. Persisted state is now discarded unless it belongs to this run and schema version |
 | A new team starts in rooms the previous team left behind | Was a bug: local room state outlived the run | Fixed. The app records which run its stored state belongs to and wipes it when the escape room's start time changes. See §3c |
-| Resetting a team's progress in Escapp appears to do nothing | The Escapp client only moves progress forward, so it discards a server list shorter than its own cache | Fixed. The app compares what the server reports against what the client believes, and the server wins. See §3c |
+| Resetting a team's progress in Escapp appears to do nothing | The client discards the emptied server list and hands the app its own stale copy, so the app cannot tell | Open the app with **`?reset=1`** on the affected machine. See §3d |

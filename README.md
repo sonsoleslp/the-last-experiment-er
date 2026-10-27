@@ -170,6 +170,7 @@ Fault injection for exercising the reconnection UI:
 | URL parameter | Effect |
 |---|---|
 | `?interface=class` | Classroom display: the cinematic only, no sign-in |
+| `?reset=1` | Wipe everything this browser remembers and start clean |
 | `?mock=1` | Force the mock adapter |
 | `?mock=1&escappFail=1` | Submissions never reach the server |
 | `?mock=1&escappOffline=1` | The client never connects |
@@ -201,14 +202,15 @@ callback early-returns in preview mode and so cannot be the only one.
 ### The client never moves progress backwards
 
 `_isStateNewestThan` treats a state as newer only when it has **more** solved
-puzzles, so after a teacher resets a team the server's shorter list is
-discarded and the client keeps its cached progress. Resetting a team appears to
-do nothing.
+puzzles, so after a teacher resets a team the server's shorter list is judged
+out of date. Worse, `_updateErStates` is then called with `_getNewestState()`,
+which returns the **stale local state** and clears `remoteErState` on the way
+through. By the time the app's callback runs, the server's real list is gone.
 
-The app compares the list the server sent against what the client believes and
-takes the server's, then deletes the client's cached `localErState` (ignoring
-it is not enough: it would come back on the next load) and restarts. The client
-being merely *behind* the server is left alone, since it resolves that itself.
+So the app cannot honestly detect a reset from what it is given, and the lever
+is manual: **`?reset=1`** wipes everything the browser remembers, in any mode,
+with nothing needed from the server. Restarting the *turn* does work
+automatically, because that changes the start time, which the client notices.
 
 ### Two behaviours worth knowing about
 

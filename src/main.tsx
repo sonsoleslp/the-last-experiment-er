@@ -1,12 +1,21 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { applyResetHatch } from './resetHatch';
 import { ClassIntro } from './components/ClassIntro';
 import { isClassroomMode } from './classroom';
 import { EscappProvider } from './escapp/EscappProvider';
 import { GameProvider } from './game/GameProvider';
 import './styles/index.css';
 import './styles/components.css';
+
+/*
+ * `?reset=1` wipes everything this browser remembers and starts clean. It runs
+ * first, before the Escapp client is ever constructed, because the client
+ * reads its cached state the moment it is created. See src/resetHatch.ts for
+ * why this manual lever is needed at all.
+ */
+applyResetHatch();
 
 const root = createRoot(document.getElementById('root')!);
 

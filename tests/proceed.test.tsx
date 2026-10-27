@@ -89,15 +89,15 @@ describe('the waiting label is advice, not a condition', () => {
     expect(container.querySelector('button')).not.toBeNull();
   });
 
-  it('is replaced by the recorded message once ready', async () => {
+  it('is replaced by the saved message once ready', async () => {
     await render({ ...base, verified: true, ready: true });
-    expect(container.textContent).toContain('Progress recorded by Escapp');
+    expect(container.textContent).toContain('Progress saved');
     expect(container.textContent).not.toContain('Something is unfinished here.');
   });
 
   it('falls back gracefully when no waiting label is given', async () => {
     await render({ verified: true, ready: false, label: 'Go', onProceed: () => {} });
     expect(container.querySelector('button')).not.toBeNull();
-    expect(container.textContent).toContain('Progress recorded by Escapp');
+    expect(container.textContent).toContain('Progress saved');
   });
 });

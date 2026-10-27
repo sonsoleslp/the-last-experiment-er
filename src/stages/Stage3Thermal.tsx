@@ -143,7 +143,7 @@ export const Stage3Thermal = ({ onAdvance }: { onAdvance: () => void }) => {
       setToast({
         tone: 'warn',
         title: 'INTERVENTION NOT CONFIRMED',
-        body: `${result.error ?? 'Escapp could not be reached.'} Nothing was recorded: try again.`,
+        body: `${result.error ?? 'The facility network is not responding.'} Nothing was logged: try again.`,
       });
       return;
     }

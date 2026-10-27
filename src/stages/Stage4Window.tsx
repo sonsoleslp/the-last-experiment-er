@@ -124,7 +124,7 @@ export const Stage4Window = ({ onAdvance }: { onAdvance: () => void }) => {
       setToast({
         tone: 'warn',
         title: 'PLAN NOT FILED',
-        body: `${result.error ?? 'Escapp could not be reached.'} Nothing was recorded, try again.`,
+        body: `${result.error ?? 'The facility network is not responding.'} Nothing was logged, try again.`,
       });
       return;
     }

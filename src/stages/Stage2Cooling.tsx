@@ -140,7 +140,7 @@ export const Stage2Cooling = ({ onAdvance }: { onAdvance: () => void }) => {
       setToast({
         tone: 'warn',
         title: 'SETTING NOT CHECKED',
-        body: `${result.error ?? 'Escapp could not be reached.'} The pump runs, but nothing was recorded.`,
+        body: `${result.error ?? 'The facility network is not responding.'} The pump runs, but the setting was not logged.`,
       });
     } else if (result.verified) {
       // The success message is raised by the shell (game/notifications.ts), so

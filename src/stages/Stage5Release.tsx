@@ -188,7 +188,7 @@ export const Stage5Release = () => {
       setToast({
         tone: 'warn',
         title: 'COMMAND NOT SENT',
-        body: `${result.error ?? 'Escapp could not be reached.'} The motor will not fire unrecorded. Reconnect and try again.`,
+        body: `${result.error ?? 'The facility network is not responding.'} The motor will not fire unlogged. Try again.`,
       });
       return;
     }
@@ -201,7 +201,7 @@ export const Stage5Release = () => {
       setToast({
         tone: 'warn',
         title: 'SAFETY SYSTEM OUT OF STEP',
-        body: 'Your reading was right, but the safety system rejected it. Tell whoever set the room up: see the banner at the top.',
+        body: 'Your reading was right, but the safety system rejected it. That is a fault in the room, not in your working: tell whoever set it up.',
       });
     } else {
       dispatch({ type: 'armActuator', value: false });
@@ -267,7 +267,7 @@ export const Stage5Release = () => {
                   the 12 kPa/min limit.
                 </p>
               </div>
-              {allSolved && <Chip tone="ok">All five stages verified by Escapp</Chip>}
+              {allSolved && <Chip tone="ok">All five stages complete</Chip>}
             </div>
           </Modal>
         )}

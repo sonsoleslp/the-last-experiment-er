@@ -1,6 +1,12 @@
 /**
  * Escapp connection state, always visible when it is not healthy.
  *
+ * NAMING: the platform is never named in anything in-fiction. A student in the
+ * middle of a rescue should not read the word "Escapp" in a facility warning.
+ * It IS named in the two banners below that exist for whoever is RUNNING the
+ * room (simulated mode, author preview) and in the setup-problem banner, where
+ * naming it is the actionable information rather than a brand leak.
+ *
  * Two distinct messages, because they mean different things to a class:
  *  - OFFLINE: Escapp is unreachable. Nothing can be verified; the team should
  *    wait and retry. We never present unverified work as progress.
@@ -36,8 +42,8 @@ export const ConnectionBanner = () => {
         <div style={{ flex: 1 }}>
           <b>Facility uplink lost.</b>{' '}
           {status === 'unsupported'
-            ? 'The Escapp client could not be loaded, so answers cannot be verified.'
-            : 'Escapp cannot be reached, so answers cannot be verified right now. Your findings are safe: reconnect and submit again.'}
+            ? 'The verification service could not be loaded, so answers cannot be confirmed.'
+            : 'The facility network is not responding, so answers cannot be confirmed right now. Your findings are safe: reconnect and submit again.'}
         </div>
         <button className="btn btn-ghost btn-sm" onClick={retry}>
           Reconnect

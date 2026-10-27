@@ -127,8 +127,8 @@ const BootScreen = ({
     <div className="boot-screen">
       <h1 style={{ color: 'var(--red)' }}>FACILITY UPLINK LOST</h1>
       <p>
-        Escapp cannot be reached right now, so your team's progress cannot be verified. Nothing has
-        been lost: reconnect and carry on from where you were.
+        The facility network is not responding, so your team's progress cannot be confirmed. Nothing
+        has been lost: reconnect and carry on from where you were.
       </p>
       {detail && <p style={{ color: 'var(--amber)', fontSize: 13 }}>{detail}</p>}
       <button className="btn btn-primary" onClick={onRetry}>

@@ -44,7 +44,7 @@ export const ProceedBar = ({
         ✓ Verified
       </span>
       <span className="proceed-text">
-        {ready ? 'Progress recorded by Escapp.' : (waitingLabel ?? 'Progress recorded by Escapp.')}
+        {ready ? 'Progress saved.' : (waitingLabel ?? 'Progress saved.')}
       </span>
       <button className="btn btn-primary btn-sm" onClick={onProceed}>
         {label} →
