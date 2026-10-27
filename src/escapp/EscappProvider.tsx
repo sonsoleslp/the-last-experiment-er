@@ -58,8 +58,8 @@ interface EscappContextValue {
   storage: EscappStorage | null;
   /** Identifies this run, so stale local state can be discarded. */
   runId: string | null;
-  /** Did this browser submit the answer that verified the given stage? */
-  solvedLocally(stage: number): boolean;
+  /** Did this browser submit the answer for the given stage? */
+  attemptedLocally(stage: number): boolean;
   /** Retry connecting after an outage. */
   retry(): void;
   celebrate(): void;
@@ -150,11 +150,24 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
    */
   const knownSolved = useRef<Set<number>>(new Set());
   /**
-   * Puzzle ids this browser verified itself. Used only to decide how helpful
-   * to be when progress arrives: the solver keeps their beat in the room, a
-   * teammate is carried along with their team.
+   * Puzzle ids this browser has SUBMITTED an answer for. Used only to decide
+   * how helpful to be when progress arrives: the solver keeps their beat in
+   * the room, a teammate is carried along with their team.
+   *
+   * It records the attempt, not the verdict, and it is recorded BEFORE the
+   * answer is sent. That ordering is the whole point. Escapp reports the new
+   * team state through onStateChange, and that callback fires while
+   * submitStage is still awaiting its own result: with the mock adapter it
+   * runs a fixed 120ms earlier, and against a real server the two race. So
+   * recording "I solved this" after the await arrived too late, the solver was
+   * read as a teammate, and they were carried out of the room they had just
+   * solved without ever being offered the proceed control.
+   *
+   * Recording the attempt cannot overstate progress: nothing here unlocks a
+   * stage. A wrong answer adds an id whose stage never gets verified, so the
+   * entry is simply never consulted.
    */
-  const ownSolves = useRef<Set<number>>(new Set());
+  const ownAttempts = useRef<Set<number>>(new Set());
   const [retryToken, setRetryToken] = useState(0);
 
   /**
@@ -251,6 +264,9 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
   const submitStage = useCallback(
     async (stage: number, solution: string): Promise<SubmitResult> => {
       const spec = puzzleForStage(stage);
+      // Before the await: see ownAttempts above. The state-change callback can
+      // arrive before this promise settles.
+      ownAttempts.current.add(spec.id);
       const result = await adapter.submit(spec.id, solution);
       setStatus(adapter.status());
       setStatusDetail(adapter.statusDetail());
@@ -263,8 +279,6 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
        * configured answer is stale is otherwise completely unsolvable, and the
        * error the player sees would blame them for it.
        */
-      if (result.verified) ownSolves.current.add(spec.id);
-
       if (result.reachedServer && !result.verified && solution === spec.solution) {
         result.configMismatch = true;
         setConfigError(
@@ -310,9 +324,9 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
       checkStage,
       storage,
       runId,
-      solvedLocally: (stage: number) => {
+      attemptedLocally: (stage: number) => {
         try {
-          return ownSolves.current.has(puzzleForStage(stage).id);
+          return ownAttempts.current.has(puzzleForStage(stage).id);
         } catch {
           return false;
         }

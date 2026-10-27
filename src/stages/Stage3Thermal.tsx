@@ -29,6 +29,7 @@ import { FunctionGraph } from '../components/FunctionGraph';
 import type { HotspotDef } from '../components/Hotspot';
 import { sfx } from '../audio/engine';
 import { ProceedBar } from '../components/ProceedBar';
+import { SceneStrip } from '../components/SceneStrip';
 import { ThermalScene } from '../components/RoomScene';
 import { StageLayout } from '../components/StageLayout';
 import { Toast, type ToastData } from '../components/Toast';
@@ -199,10 +200,10 @@ export const Stage3Thermal = ({ onAdvance }: { onAdvance: () => void }) => {
       seen={state.inspected}
       onHotspot={open}
     >
-      {toast && <Toast data={toast} onClose={() => setToast(null)} />}
-      {!toast && (
+      <SceneStrip>
+        {toast && <Toast data={toast} onClose={() => setToast(null)} />}
         <ProceedBar verified={verified} ready={verified} label="Proceed to chamber C-7" onProceed={onAdvance} />
-      )}
+      </SceneStrip>
 
       {/* ------------------------------------------- the intervention console */}
 

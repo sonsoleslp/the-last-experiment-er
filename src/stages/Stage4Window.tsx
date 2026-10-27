@@ -32,6 +32,7 @@ import { FunctionGraph } from '../components/FunctionGraph';
 import type { HotspotDef } from '../components/Hotspot';
 import { sfx } from '../audio/engine';
 import { ProceedBar } from '../components/ProceedBar';
+import { SceneStrip } from '../components/SceneStrip';
 import { ChamberScene } from '../components/RoomScene';
 import { StageLayout } from '../components/StageLayout';
 import { Toast, type ToastData } from '../components/Toast';
@@ -167,8 +168,8 @@ export const Stage4Window = ({ onAdvance }: { onAdvance: () => void }) => {
       seen={state.inspected}
       onHotspot={open}
     >
-      {toast && <Toast data={toast} onClose={() => setToast(null)} />}
-      {!toast && (
+      <SceneStrip>
+        {toast && <Toast data={toast} onClose={() => setToast(null)} />}
         <ProceedBar
           verified={verified}
           ready={verified}
@@ -180,7 +181,7 @@ export const Stage4Window = ({ onAdvance }: { onAdvance: () => void }) => {
           }
           onProceed={onAdvance}
         />
-      )}
+      </SceneStrip>
 
       {/* --------------------------------------------------- safety console */}
 

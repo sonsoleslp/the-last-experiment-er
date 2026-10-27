@@ -21,6 +21,7 @@ import { IdCardModal, type CardKind } from '../components/IdCard';
 import type { HotspotDef } from '../components/Hotspot';
 import { sfx } from '../audio/engine';
 import { ProceedBar } from '../components/ProceedBar';
+import { SceneStrip } from '../components/SceneStrip';
 import { LabScene } from '../components/RoomScene';
 import { StageLayout } from '../components/StageLayout';
 import { Toast, type ToastData } from '../components/Toast';
@@ -92,8 +93,8 @@ export const Stage1Lab = ({ onAdvance }: { onAdvance: () => void }) => {
       seen={state.inspected}
       onHotspot={open}
     >
-      {toast && <Toast data={toast} onClose={() => setToast(null)} />}
-      {!toast && (
+      <SceneStrip>
+        {toast && <Toast data={toast} onClose={() => setToast(null)} />}
         <ProceedBar
           verified={verifiedStages.includes(1)}
           ready={hasCard}
@@ -101,7 +102,7 @@ export const Stage1Lab = ({ onAdvance }: { onAdvance: () => void }) => {
           waitingLabel="You can still take the access card and try the door first."
           onProceed={onAdvance}
         />
-      )}
+      </SceneStrip>
 
       {/* 1: what happened */}
       {view === 'computer' && (
@@ -170,11 +171,13 @@ export const Stage1Lab = ({ onAdvance }: { onAdvance: () => void }) => {
                 dispatch({ type: 'openCabinet' });
                 dispatch({ type: 'collect', id: 'accessCard' });
                 setView(null);
-                setToast({
-                  tone: 'ok',
-                  title: 'EMERGENCY ACCESS CARD',
-                  body: 'The latch pull backs. Inside is a red-striped override card: it opens emergency doors on this sublevel.',
-                });
+                /*
+                 * No message here. The shared stage-solved notification
+                 * (game/notifications.ts, "CABINET OPEN") already describes the
+                 * access card, and it is shown to everyone on the team. Raising
+                 * a second confirmation of the same event put two stacked
+                 * messages over the strip the proceed control sits on.
+                 */
               }}
             />
           )}

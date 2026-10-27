@@ -44,6 +44,7 @@ import { DocumentModal } from '../components/DocumentView';
 import { FunctionGraph } from '../components/FunctionGraph';
 import type { HotspotDef } from '../components/Hotspot';
 import { ProceedBar } from '../components/ProceedBar';
+import { SceneStrip } from '../components/SceneStrip';
 import { CoolingScene } from '../components/RoomScene';
 import { StageLayout } from '../components/StageLayout';
 import { Toast, type ToastData } from '../components/Toast';
@@ -180,8 +181,8 @@ export const Stage2Cooling = ({ onAdvance }: { onAdvance: () => void }) => {
       seen={state.inspected}
       onHotspot={open}
     >
-      {toast && <Toast data={toast} onClose={() => setToast(null)} />}
-      {!toast && (
+      <SceneStrip>
+        {toast && <Toast data={toast} onClose={() => setToast(null)} />}
         <ProceedBar
           verified={verified}
           ready={verified && state.pumpRunning && meets}
@@ -189,7 +190,7 @@ export const Stage2Cooling = ({ onAdvance }: { onAdvance: () => void }) => {
           waitingLabel="The pump is not running here; your team has it set correctly."
           onProceed={onAdvance}
         />
-      )}
+      </SceneStrip>
 
       {/* ------------------------------------------------- the pump console */}
 

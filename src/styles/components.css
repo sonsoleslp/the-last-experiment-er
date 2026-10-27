@@ -52,6 +52,29 @@
 /* ------------------------------------------------- in-scene proceed bar -- */
 
 /* Floats over the bottom of the scene instead of adding page height. */
+/*
+ * The bottom strip: messages stacked above the way forward.
+ *
+ * Both used to be pinned to bottom:14px, which forced the stages to show one
+ * OR the other and let a message hide the only control out of the room. See
+ * components/SceneStrip.tsx.
+ */
+.scene-strip {
+  position: absolute; left: 14px; right: 14px; bottom: 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  /* The empty parts of the strip must not swallow clicks on the artwork. */
+  pointer-events: none;
+}
+.scene-strip > * { pointer-events: auto; }
+.scene-strip .toast {
+  position: relative; left: auto; right: auto; bottom: auto;
+  width: 100%; box-sizing: border-box;
+}
+.scene-strip .proceed {
+  position: relative; left: auto; bottom: auto;
+  transform: none; max-width: 100%;
+}
+
 .proceed {
   position: absolute; left: 50%; bottom: 14px;
   transform: translateX(-50%);
@@ -1043,9 +1066,19 @@
  * the app shell, so the stage can change underneath it: that is what lets a
  * teammate read the message before their scene catches up.
  */
+/*
+ * The shared team notification.
+ *
+ * Anchored under the HUD, not above the proceed strip. It used to sit at
+ * bottom:60px, which overlapped the strip as soon as the strip could hold both
+ * a message and the proceed bar; being z-index 55 it would then have covered
+ * the very button it was telling the team they had earned.
+ */
 .toast-shell {
   position: fixed;
-  left: 50%; bottom: 60px;
+  left: 50%;
+  top: calc(var(--topbar-h, 44px) + var(--hud-h, 40px) + var(--banner-h, 0px) + 14px);
+  bottom: auto;
   transform: translateX(-50%);
   width: min(640px, calc(100% - 48px));
   z-index: 55;

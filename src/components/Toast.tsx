@@ -2,10 +2,14 @@
  * In-scene feedback. Consequences and warnings appear over the bottom of the
  * scene rather than growing the page downward.
  *
- * These dismiss themselves. The toast occupies the same strip as the proceed
- * bar, so a confirmation that lingered; "COOLING MAINTAINED: TRANSIENT
- * STABLE": sat on top of the next thing the team needed to see until someone
- * thought to close it. Now it clears itself and the next task appears.
+ * These dismiss themselves. A confirmation that lingered; "COOLING
+ * MAINTAINED: TRANSIENT STABLE": sat over the next thing the team needed to
+ * see until someone thought to close it. Now it clears itself.
+ *
+ * It no longer HIDES anything while it is up: the message and the proceed
+ * control have separate rows in components/SceneStrip.tsx. They used to share
+ * one, which is why the countdown matters less than it did and why the pause
+ * below is capped rather than indefinite.
  *
  * Timing is by tone, because the messages do different jobs: a success
  * confirmation only needs acknowledging, while a consequence explains why a
@@ -47,6 +51,17 @@ const BASE: Record<Tone, number> = { ok: 2600, info: 2600, warn: 6500, bad: 7000
 const PER_CHAR = 16;
 const MAX_MS = 12000;
 const TICK = 100;
+/*
+ * How long the hover/focus pause may hold a message open, ms.
+ *
+ * The pause exists so a message cannot vanish while it is being read. But a
+ * message sits on the same strip as the proceed control, and a pointer coming
+ * to rest there, which is exactly where a pointer comes to rest, held the
+ * countdown indefinitely. Capping it keeps the courtesy and removes the
+ * deadlock: the manual close is still there, and nothing here is the only
+ * channel for its information.
+ */
+const MAX_PAUSE_MS = 15000;
 
 export interface ToastData {
   tone: Tone;
@@ -67,6 +82,7 @@ export const Toast = ({ data, onClose }: { data: ToastData; onClose: () => void 
   const total = toastDuration(data.tone, data.body.length);
   const [remaining, setRemaining] = useState(total);
   const paused = useRef(false);
+  const pausedFor = useRef(0);
   const closed = useRef(false);
   /*
    * Read onClose through a ref for the same reason the modal does: callers
@@ -84,19 +100,31 @@ export const Toast = ({ data, onClose }: { data: ToastData; onClose: () => void 
 
   useEffect(() => {
     closed.current = false;
+    pausedFor.current = 0;
     setRemaining(total);
+    /*
+     * The countdown is kept in a local, NOT read back out of state inside an
+     * updater. onClose used to be called from within the setRemaining updater,
+     * and React runs updaters during render: dismissing the message therefore
+     * set state on the parent mid-render ("Cannot update a component while
+     * rendering a different component"), which React is free to discard. For
+     * the shared team notification the parent's handler is what moves the
+     * player on, so losing it left them watching a message disappear and
+     * nothing happen.
+     */
+    let left = total;
     const id = window.setInterval(() => {
-      if (paused.current) return;
-      setRemaining((prev) => {
-        const next = prev - TICK;
-        if (next <= 0 && !closed.current) {
-          closed.current = true;
-          window.clearInterval(id);
-          onCloseRef.current();
-          return 0;
-        }
-        return next;
-      });
+      if (paused.current && pausedFor.current < MAX_PAUSE_MS) {
+        pausedFor.current += TICK;
+        return;
+      }
+      left = Math.max(0, left - TICK);
+      setRemaining(left);
+      if (left === 0 && !closed.current) {
+        closed.current = true;
+        window.clearInterval(id);
+        onCloseRef.current();
+      }
     }, TICK);
     return () => window.clearInterval(id);
     // Restart the countdown only when the message itself changes.

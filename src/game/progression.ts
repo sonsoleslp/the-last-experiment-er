@@ -33,14 +33,17 @@ export interface ProgressChange {
   /** The stage this player is currently looking at. */
   viewStage: number;
   /**
-   * Did THIS browser submit the answer that verified the stage?
+   * Did THIS browser submit the answer for the stage that was just verified?
    *
    * The distinction matters for how helpful the app can be. Someone who just
    * solved the puzzle has business left in the room: watching the coolant
    * settle, picking up the card. Someone whose teammate solved it has none,
    * and making them click to follow their own team is friction for nothing.
+   *
+   * It is the ATTEMPT that is recorded, not the verdict, because the verdict
+   * is not known early enough to be useful here. See EscappProvider.
    */
-  solvedLocally: boolean;
+  attemptedLocally: boolean;
 }
 
 export interface ProgressDecision {
@@ -56,7 +59,7 @@ export const decideProgress = ({
   previousUnlocked,
   unlocked,
   viewStage,
-  solvedLocally,
+  attemptedLocally,
 }: ProgressChange): ProgressDecision => {
   // First load: resume silently at the team's current stage.
   if (previousUnlocked === null) {
@@ -81,7 +84,7 @@ export const decideProgress = ({
    * been read, including a teammate standing in the same room, who has nothing
    * left to do there.
    */
-  const keepPosition = solvedLocally && viewStage === solved;
+  const keepPosition = attemptedLocally && viewStage === solved;
 
   return {
     notifyStage: solved,

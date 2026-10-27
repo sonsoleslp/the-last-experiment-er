@@ -18,6 +18,8 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProceedBar } from '../src/components/ProceedBar';
+import { SceneStrip } from '../src/components/SceneStrip';
+import { Toast } from '../src/components/Toast';
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -99,5 +101,54 @@ describe('the waiting label is advice, not a condition', () => {
     await render({ verified: true, ready: false, label: 'Go', onProceed: () => {} });
     expect(container.querySelector('button')).not.toBeNull();
     expect(container.textContent).toContain('Progress saved');
+  });
+});
+
+/**
+ * The other half of the same bug.
+ *
+ * Even with `ready` made advisory, every stage rendered the message and the
+ * proceed bar as alternatives: `{toast && <Toast/>}{!toast && <ProceedBar/>}`.
+ * A confirmation about the stage therefore HID the control that leaves it, and
+ * because a pointer resting on a toast pauses its countdown, "until the
+ * message clears" could be indefinite. They have separate rows now.
+ */
+describe('a message never hides the way forward', () => {
+  it('shows the proceed button while a message is on the strip', async () => {
+    await act(async () => {
+      root = createRoot(container);
+      root.render(
+        <SceneStrip>
+          <Toast
+            data={{ tone: 'ok', title: 'CABINET OPEN', body: 'The latch retracts.' }}
+            onClose={() => {}}
+          />
+          <ProceedBar {...base} verified ready={false} />
+        </SceneStrip>,
+      );
+    });
+
+    expect(container.querySelector('.toast')).not.toBeNull();
+    const button = container.querySelector('.proceed button') as HTMLButtonElement | null;
+    expect(button, 'the proceed control must survive a message').not.toBeNull();
+    expect(button!.disabled).toBe(false);
+  });
+
+  it('still shows nothing for an unverified stage, message or not', async () => {
+    await act(async () => {
+      root = createRoot(container);
+      root.render(
+        <SceneStrip>
+          <Toast
+            data={{ tone: 'bad', title: 'ACCESS DENIED', body: 'The reader stays red.' }}
+            onClose={() => {}}
+          />
+          <ProceedBar {...base} verified={false} ready={false} />
+        </SceneStrip>,
+      );
+    });
+
+    expect(container.querySelector('.toast')).not.toBeNull();
+    expect(container.querySelector('.proceed')).toBeNull();
   });
 });
