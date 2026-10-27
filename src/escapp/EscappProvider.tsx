@@ -57,6 +57,8 @@ interface EscappContextValue {
   storage: EscappStorage | null;
   /** Identifies this run, so stale local state can be discarded. */
   runId: string | null;
+  /** Did this browser submit the answer that verified the given stage? */
+  solvedLocally(stage: number): boolean;
   /** Retry connecting after an outage. */
   retry(): void;
   celebrate(): void;
@@ -146,6 +148,12 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
    * a teammate's solve apart from its own.
    */
   const knownSolved = useRef<Set<number>>(new Set());
+  /**
+   * Puzzle ids this browser verified itself. Used only to decide how helpful
+   * to be when progress arrives: the solver keeps their beat in the room, a
+   * teammate is carried along with their team.
+   */
+  const ownSolves = useRef<Set<number>>(new Set());
   const [retryToken, setRetryToken] = useState(0);
 
   /**
@@ -244,6 +252,8 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
        * configured answer is stale is otherwise completely unsolvable, and the
        * error the player sees would blame them for it.
        */
+      if (result.verified) ownSolves.current.add(spec.id);
+
       if (result.reachedServer && !result.verified && solution === spec.solution) {
         result.configMismatch = true;
         setConfigError(
@@ -289,6 +299,13 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
       checkStage,
       storage,
       runId,
+      solvedLocally: (stage: number) => {
+        try {
+          return ownSolves.current.has(puzzleForStage(stage).id);
+        } catch {
+          return false;
+        }
+      },
       retry,
       celebrate: adapter.celebrate,
     }),

@@ -13,12 +13,13 @@
  *
  *  - A STAGE GETS VERIFIED while playing. Always show the stage-solved
  *    notification, the same one the solver sees. Then:
- *      * if this player is standing on the stage that was just solved, leave
- *        them there. They get the notification and the "proceed" control, so
- *        they move on when they are ready. This covers the solver and anyone
- *        in the same room as them.
- *      * otherwise they are behind their team, so move them up once the
- *        notification has been read.
+ *      * if this player SOLVED it and is still in that room, leave them
+ *        there. They get the notification and the proceed control, so they
+ *        move on when they are ready.
+ *      * everyone else follows their team once the notification has been
+ *        read, including a teammate standing in the same room. They have
+ *        nothing left to do there, and making them click to follow their own
+ *        team is friction for nothing.
  *
  * Nothing here jumps anybody the instant a message arrives, and no player is
  * ever moved without first being told why.
@@ -31,6 +32,15 @@ export interface ProgressChange {
   unlocked: number;
   /** The stage this player is currently looking at. */
   viewStage: number;
+  /**
+   * Did THIS browser submit the answer that verified the stage?
+   *
+   * The distinction matters for how helpful the app can be. Someone who just
+   * solved the puzzle has business left in the room: watching the coolant
+   * settle, picking up the card. Someone whose teammate solved it has none,
+   * and making them click to follow their own team is friction for nothing.
+   */
+  solvedLocally: boolean;
 }
 
 export interface ProgressDecision {
@@ -46,6 +56,7 @@ export const decideProgress = ({
   previousUnlocked,
   unlocked,
   viewStage,
+  solvedLocally,
 }: ProgressChange): ProgressDecision => {
   // First load: resume silently at the team's current stage.
   if (previousUnlocked === null) {
@@ -63,12 +74,18 @@ export const decideProgress = ({
 
   // A stage was verified. The one that was solved is the one just passed.
   const solved = unlocked - 1;
-  const standingOnIt = viewStage === solved;
+  /*
+   * Hold position only for the person who solved it, and only while they are
+   * still in that room: the proceed control is there for them and they may
+   * want a moment. Everyone else follows their team once the notification has
+   * been read, including a teammate standing in the same room, who has nothing
+   * left to do there.
+   */
+  const keepPosition = solvedLocally && viewStage === solved;
 
   return {
     notifyStage: solved,
     jumpTo: null,
-    // Standing on it: the proceed control takes over, so do not move them.
-    advanceAfterNotice: standingOnIt ? null : unlocked,
+    advanceAfterNotice: keepPosition ? null : unlocked,
   };
 };

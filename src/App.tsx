@@ -139,7 +139,7 @@ const BootScreen = ({
 };
 
 const Game = () => {
-  const { unlockedStage } = useEscapp();
+  const { unlockedStage, solvedLocally } = useEscapp();
   const { state, dispatch } = useGame();
   const [viewStage, setViewStage] = useState(1);
 
@@ -166,6 +166,8 @@ const Game = () => {
       previousUnlocked: previousUnlocked.current,
       unlocked: unlockedStage,
       viewStage,
+      // The stage that was just verified is the one we have moved past.
+      solvedLocally: solvedLocally(unlockedStage - 1),
     });
     previousUnlocked.current = unlockedStage;
 

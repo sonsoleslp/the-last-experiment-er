@@ -184,8 +184,13 @@ not a different modal one.
 - `src/game/notifications.ts` is the single source of the stage-solved message,
   derived from the model so every browser produces identical wording.
 - `src/game/progression.ts` decides when anyone moves, and always shows the
-  notification first. A player standing on the solved stage keeps their proceed
-  control; a player who is behind catches up once the message is read.
+  notification first. The person who solved it keeps their proceed control, so
+  they can watch the result settle; everyone else is carried along with their
+  team once the message is read, so nobody has to click to follow their own
+  team.
+- A verified stage **always** offers a way forward. The proceed control's
+  `ready` flag is advisory, never a gate: it used to be gated on local state,
+  which stranded teammates in a room their team had already finished.
 
 Local stage state is persisted with a schema version and a run id, so a
 previous playthrough's machinery can never leak into a fresh one.

@@ -15,7 +15,7 @@ import { PUZZLES } from '../src/escapp/puzzles';
 
 describe('first load', () => {
   it('resumes at the team stage with no notification', () => {
-    const d = decideProgress({ previousUnlocked: null, unlocked: 4, viewStage: 1 });
+    const d = decideProgress({ previousUnlocked: null, unlocked: 4, viewStage: 1, solvedLocally: false });
     expect(d.jumpTo).toBe(4);
     expect(d.notifyStage).toBeNull();
     expect(d.advanceAfterNotice).toBeNull();
@@ -23,7 +23,7 @@ describe('first load', () => {
 
   it('does not announce progress the player was not present for', () => {
     for (const unlocked of [1, 2, 3, 4, 5]) {
-      expect(decideProgress({ previousUnlocked: null, unlocked, viewStage: 1 }).notifyStage).toBeNull();
+      expect(decideProgress({ previousUnlocked: null, unlocked, viewStage: 1, solvedLocally: false }).notifyStage).toBeNull();
     }
   });
 });
@@ -31,39 +31,57 @@ describe('first load', () => {
 describe('a stage gets verified while playing', () => {
   it('never moves anyone immediately', () => {
     for (const viewStage of [1, 2, 3, 4, 5]) {
-      const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage });
+      const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage, solvedLocally: true });
       expect(d.jumpTo, `viewStage ${viewStage} must not jump`).toBeNull();
     }
   });
 
   it('always shows the stage-solved notification first', () => {
-    const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage: 1 });
+    const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage: 1, solvedLocally: false });
     expect(d.notifyStage).toBe(2);
     expect(d.advanceAfterNotice).toBe(3);
   });
 
-  /** The solver, and anyone standing in the same room, keep their proceed bar. */
-  it('leaves a player standing on the solved stage where they are', () => {
-    const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage: 2 });
+  /** The solver has business left in the room, so they keep their proceed bar. */
+  it('leaves the SOLVER standing on the stage they solved', () => {
+    const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage: 2, solvedLocally: true });
     expect(d.notifyStage).toBe(2);
     expect(d.advanceAfterNotice).toBeNull();
   });
 
+  /**
+   * The bug this prevents: a teammate standing in the same room saw the stage
+   * verified and had no way onward, because the proceed control depended on
+   * local state they had never built. They must be carried along.
+   */
+  it('carries a TEAMMATE out of the room their team just finished', () => {
+    const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage: 2, solvedLocally: false });
+    expect(d.notifyStage).toBe(2);
+    expect(d.advanceAfterNotice).toBe(3);
+  });
+
+  it('carries a teammate along from any room, not just the solved one', () => {
+    for (const viewStage of [1, 2]) {
+      const d = decideProgress({ previousUnlocked: 2, unlocked: 3, viewStage, solvedLocally: false });
+      expect(d.advanceAfterNotice, `from stage ${viewStage}`).toBe(3);
+    }
+  });
+
   it('catches up a player who is behind their team, after the notice', () => {
-    const d = decideProgress({ previousUnlocked: 2, unlocked: 4, viewStage: 1 });
+    const d = decideProgress({ previousUnlocked: 2, unlocked: 4, viewStage: 1, solvedLocally: false });
     expect(d.notifyStage).toBe(3);
     expect(d.advanceAfterNotice).toBe(4);
   });
 
   it('ignores a state change that advances nothing', () => {
-    const d = decideProgress({ previousUnlocked: 3, unlocked: 3, viewStage: 3 });
+    const d = decideProgress({ previousUnlocked: 3, unlocked: 3, viewStage: 3, solvedLocally: true });
     expect(d.notifyStage).toBeNull();
     expect(d.advanceAfterNotice).toBeNull();
     expect(d.jumpTo).toBeNull();
   });
 
   it('clamps a player somehow ahead of what is verified', () => {
-    const d = decideProgress({ previousUnlocked: 3, unlocked: 3, viewStage: 5 });
+    const d = decideProgress({ previousUnlocked: 3, unlocked: 3, viewStage: 5, solvedLocally: false });
     expect(d.jumpTo).toBe(3);
   });
 });

@@ -135,10 +135,14 @@ different, interrupting message, which is not the same experience.
   by the solver and by every teammate. Each message is derived from the model,
   so every browser produces identical wording without being told what happened.
 - One rule for moving anyone (`src/game/progression.ts`): **always show the
-  notification first.** A player standing on the stage that was just solved
-  keeps their proceed control and moves on when ready. A player who is behind
-  their team catches up once the notification has been read. Nobody is ever
-  moved the instant a message arrives.
+  notification first**, then:
+  - the person who **solved** it stays in the room, with the proceed control,
+    because they may want to watch the result settle;
+  - **everyone else follows their team** once the notification has been read,
+    including a teammate standing in the same room.
+
+  Nobody is ever moved the instant a message arrives, and nobody has to click
+  to follow their own team.
 
 Both are covered by `tests/sync.test.ts`.
 
@@ -357,4 +361,5 @@ are completely different. Each one also prints the adapter's specific diagnosis.
 | Local preview fails instantly with no login dialog | Preview is silent and needs a token in the URL | Append `?escapp_email=…&escapp_token=…`, or launch from Escapp's test mode. See §5 |
 | Teammates don't see each other's progress | `rtc: false`, or the room is in preview mode | Set `rtc: true` and `preview: false`; preview forces rtc off |
 | A refresh sends the player back to stage 1 | Was a bug in this app (the viewed stage clamped instead of following verified progress) | Fixed; covered by a regression test |
+| A teammate sees a stage as verified but has no way onward | Was a bug: the proceed control was gated on local state the teammate had never built, so it showed "✓ Verified" with no button | Fixed. A verified stage now always offers a way forward, and teammates are carried along automatically |
 | The last stage opens saying the vent valve is already spent | Was a bug: local stage state persisted across playthroughs with no run or version scoping | Fixed. Persisted state is now discarded unless it belongs to this run and schema version |

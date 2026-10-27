@@ -98,7 +98,7 @@ export const Stage1Lab = ({ onAdvance }: { onAdvance: () => void }) => {
           verified={verifiedStages.includes(1)}
           ready={hasCard}
           label="Enter the cooling room"
-          waitingLabel="Use the access card on the door."
+          waitingLabel="You can still take the access card and try the door first."
           onProceed={onAdvance}
         />
       )}

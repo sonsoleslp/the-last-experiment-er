@@ -186,7 +186,7 @@ export const Stage2Cooling = ({ onAdvance }: { onAdvance: () => void }) => {
           verified={verified}
           ready={verified && state.pumpRunning && meets}
           label="Proceed to thermal monitoring"
-          waitingLabel="Leave the pump running at the verified setting."
+          waitingLabel="The pump is not running here; your team has it set correctly."
           onProceed={onAdvance}
         />
       )}
