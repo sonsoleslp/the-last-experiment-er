@@ -193,13 +193,40 @@ starts, everything this browser built locally is wiped: the opened cabinet, the
 running pump, the collected card, the spent vent valve. Otherwise a new team
 would walk into rooms the previous team had already been through.
 
-There are two independent guards, because one is not enough:
+There are three independent guards, because no one of them covers every case:
 
 1. **The stored state names its run.** Anything belonging to a different start
    time is refused on load, even if nothing wiped it.
 2. **A run marker is compared on every boot**, and a mismatch wipes. This
    matters because the Escapp client's own restart callback cannot be relied on
    alone: it early-returns in preview mode, so in preview it never fires at all.
+3. **The server outranks the client's cache.** See below; this is the one that
+   catches *resetting a team* as opposed to *starting a new turn*.
+
+### Resetting a team's progress
+
+Resetting a team inside the same turn does **not** change the start time, so
+neither of the first two guards sees it. Worse, the Escapp client only ever
+moves progress forward. Its own comparison is
+
+```js
+_isStateNewestThan = (a, b) =>
+  a.puzzlesSolved.length !== 0 &&
+  (b.puzzlesSolved.length === 0 || a.puzzlesSolved.length > b.puzzlesSolved.length);
+```
+
+so a state counts as newer only when it has **more** solved puzzles. After a
+reset the server's list is shorter, the client concludes the server is out of
+date, and `getSolvedPuzzles()` keeps returning the pre-reset list.
+
+The app therefore compares the solved list the **server** sent against what the
+client believes, over its own linked puzzles, and the server wins. On a
+mismatch it deletes the client's cached state (`localErState` in its storage,
+which must be removed rather than ignored, or the stale list returns on the
+next load), wipes local room state, and reloads.
+
+The client being *behind* the server is left alone: that is the ordinary case
+when a teammate has just solved something, and the client resolves it itself.
 
 Escapp's own record of solved puzzles is handled by the client: when the start
 time changes it replaces its stored state with the server's, and in preview
@@ -390,3 +417,4 @@ are completely different. Each one also prints the adapter's specific diagnosis.
 | A teammate sees a stage as verified but has no way onward | Was a bug: the proceed control was gated on local state the teammate had never built, so it showed "✓ Verified" with no button | Fixed. A verified stage now always offers a way forward, and teammates are carried along automatically |
 | The last stage opens saying the vent valve is already spent | Was a bug: local stage state persisted across playthroughs with no run or version scoping | Fixed. Persisted state is now discarded unless it belongs to this run and schema version |
 | A new team starts in rooms the previous team left behind | Was a bug: local room state outlived the run | Fixed. The app records which run its stored state belongs to and wipes it when the escape room's start time changes. See §3c |
+| Resetting a team's progress in Escapp appears to do nothing | The Escapp client only moves progress forward, so it discards a server list shorter than its own cache | Fixed. The app compares what the server reports against what the client believes, and the server wins. See §3c |

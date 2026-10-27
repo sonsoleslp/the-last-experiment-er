@@ -198,6 +198,18 @@ into a fresh one. When the start time changes, the app wipes its local room
 state: two independent guards do this, because the Escapp client's own restart
 callback early-returns in preview mode and so cannot be the only one.
 
+### The client never moves progress backwards
+
+`_isStateNewestThan` treats a state as newer only when it has **more** solved
+puzzles, so after a teacher resets a team the server's shorter list is
+discarded and the client keeps its cached progress. Resetting a team appears to
+do nothing.
+
+The app compares the list the server sent against what the client believes and
+takes the server's, then deletes the client's cached `localErState` (ignoring
+it is not enough: it would come back on the next load) and restarts. The client
+being merely *behind* the server is left alone, since it resolves that itself.
+
 ### Two behaviours worth knowing about
 
 Both were found by reading the Escapp sources and are handled in code:

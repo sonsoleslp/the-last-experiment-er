@@ -27,6 +27,7 @@
  */
 
 import { ESCAPP_CLIENT_SETTINGS } from './puzzles';
+import { CLIENT_STATE_KEY, authoritativeSolved, wasProgressReset } from './reset';
 import type {
   ErState,
   EscappAdapter,
@@ -55,6 +56,14 @@ export const createProductionAdapter = (): EscappAdapter => {
   let detail: string | null = null;
   /** Escape-room start time, which identifies this run. */
   let runId: string | null = null;
+  /**
+   * The solved list the SERVER last reported, which is the authority. Held
+   * separately because the client discards a server list shorter than its own
+   * cache, which is exactly what a progress reset looks like.
+   */
+  let serverSolved: number[] | null = null;
+  /** Set once a reset has been acted on, so it is handled only once. */
+  let resetHandled = false;
   let stateListener: ((solved: number[], erState?: ErState) => void) | null = null;
   let restartListener: (() => void) | null = null;
   /** Server-verified puzzle ids during an author preview run (see above). */
@@ -79,8 +88,60 @@ export const createProductionAdapter = (): EscappAdapter => {
     } catch {
       fromClient = [];
     }
-    if (previewSolved.size === 0) return fromClient;
-    return [...new Set([...fromClient, ...previewSolved])].sort((a, b) => a - b);
+
+    // An author preview run is tracked separately; see above.
+    if (previewSolved.size > 0) {
+      return [...new Set([...fromClient, ...previewSolved])].sort((a, b) => a - b);
+    }
+
+    // The server is the authority, and the client will not move backwards.
+    if (serverSolved !== null) {
+      return authoritativeSolved({
+        serverSolved,
+        clientSolved: fromClient,
+        linkedIds: ESCAPP_CLIENT_SETTINGS.linkedPuzzleIds,
+      });
+    }
+    return fromClient;
+  };
+
+  /**
+   * Notice a progress reset done on the server and act on it.
+   *
+   * The client's cached state has to be deleted, not merely ignored: leave it
+   * and the stale list returns on the next load, because the client would
+   * again judge the server's shorter list to be out of date. Then the app is
+   * told to restart, which wipes local room state and reloads.
+   */
+  const checkForReset = (erState?: ErState): void => {
+    if (!client || resetHandled || inPreview()) return;
+    const reported = erState?.puzzlesSolved;
+    if (!Array.isArray(reported)) return;
+
+    serverSolved = reported.filter((id) => typeof id === 'number');
+
+    let clientSolved: number[] = [];
+    try {
+      clientSolved = client.getSolvedPuzzles();
+    } catch {
+      clientSolved = [];
+    }
+
+    if (
+      wasProgressReset({
+        serverSolved,
+        clientSolved,
+        linkedIds: ESCAPP_CLIENT_SETTINGS.linkedPuzzleIds,
+      })
+    ) {
+      resetHandled = true;
+      try {
+        client.getStorage()?.removeSetting(CLIENT_STATE_KEY);
+      } catch {
+        /* storage unavailable; the restart below still helps */
+      }
+      restartListener?.();
+    }
   };
 
   const init = (): Promise<EscappStatus> =>
@@ -101,6 +162,7 @@ export const createProductionAdapter = (): EscappAdapter => {
       client.registerCallback('onNewErStateCallback', ((erState: ErState) => {
         currentStatus = 'ready';
         if (erState?.startTime != null) runId = String(erState.startTime);
+        checkForReset(erState);
         stateListener?.(readSolved(), erState);
       }) as never);
 
@@ -190,6 +252,7 @@ export const createProductionAdapter = (): EscappAdapter => {
           window.clearTimeout(timeout);
           if (success) {
             if (erState?.startTime != null) runId = String(erState.startTime);
+            checkForReset(erState);
             stateListener?.(readSolved(), erState);
             settle('ready');
             return;
@@ -299,6 +362,11 @@ export const createProductionAdapter = (): EscappAdapter => {
           // will not persist: remember it so progression still works.
           if (success && method === 'submitPuzzle' && inPreview()) {
             previewSolved.add(puzzleId);
+          }
+          // The response carries the server's current list; keep it as the
+          // authority so a reset between actions is not missed.
+          if (Array.isArray(erState?.puzzlesSolved)) {
+            serverSolved = erState.puzzlesSolved.filter((id) => typeof id === 'number');
           }
           stateListener?.(readSolved(), erState);
           done({ verified: success, reachedServer: true });
