@@ -34,6 +34,7 @@ import type {
   EscappClient,
   EscappStatus,
   EscappStorage,
+  PuzzleResponse,
   SubmitResult,
 } from './types';
 
@@ -64,6 +65,20 @@ export const createProductionAdapter = (): EscappAdapter => {
   let serverSolved: number[] | null = null;
   /** Set once a reset has been acted on, so it is handled only once. */
   let resetHandled = false;
+  /**
+   * Puzzle ids the SERVER told us were correct during this run.
+   *
+   * A second line of defence for the bug below: `serverSolved` is a snapshot,
+   * and a snapshot taken before a submission does not know about it. Treating
+   * a stale short list as authoritative retracted the player's own verified
+   * solve. A verdict the server itself gave us is never withdrawn by a list
+   * that simply predates it.
+   *
+   * This cannot invent progress: every id here came back with correctAnswer
+   * true from Escapp. And it cannot defeat a genuine reset, because a reset
+   * triggers the restart listener, which reloads the page and empties this.
+   */
+  const verifiedHere = new Set<number>();
   let stateListener: ((solved: number[], erState?: ErState) => void) | null = null;
   let restartListener: (() => void) | null = null;
   /** Server-verified puzzle ids during an author preview run (see above). */
@@ -96,11 +111,13 @@ export const createProductionAdapter = (): EscappAdapter => {
 
     // The server is the authority, and the client will not move backwards.
     if (serverSolved !== null) {
-      return authoritativeSolved({
+      const agreed = authoritativeSolved({
         serverSolved,
         clientSolved: fromClient,
         linkedIds: ESCAPP_CLIENT_SETTINGS.linkedPuzzleIds,
       });
+      if (verifiedHere.size === 0) return agreed;
+      return [...new Set([...agreed, ...verifiedHere])].sort((a, b) => a - b);
     }
     return fromClient;
   };
@@ -347,14 +364,19 @@ export const createProductionAdapter = (): EscappAdapter => {
       );
 
       try {
-        client[method](puzzleId, solution, {}, (success, erState) => {
+        client[method](puzzleId, solution, {}, (success, response: PuzzleResponse = {}) => {
           window.clearTimeout(timeout);
-          // Escapp reports connection problems through erState.msg while
-          // success is false, so a message plus failure means "no verdict".
+          /*
+           * `response` is the RESPONSE BODY, not an ErState: see PuzzleResponse
+           * in types.ts. `msg` is top level on it; the escape-room state is
+           * nested under `erState`.
+           */
+          // Escapp reports connection problems through msg while success is
+          // false, so a message plus failure means "no verdict".
           const transportError =
-            !success && typeof erState?.msg === 'string' && erState.msg.length > 0;
+            !success && typeof response?.msg === 'string' && response.msg.length > 0;
           if (transportError) {
-            done({ verified: false, reachedServer: false, error: erState!.msg });
+            done({ verified: false, reachedServer: false, error: response.msg });
             return;
           }
           currentStatus = 'ready';
@@ -363,12 +385,27 @@ export const createProductionAdapter = (): EscappAdapter => {
           if (success && method === 'submitPuzzle' && inPreview()) {
             previewSolved.add(puzzleId);
           }
-          // The response carries the server's current list; keep it as the
-          // authority so a reset between actions is not missed.
-          if (Array.isArray(erState?.puzzlesSolved)) {
-            serverSolved = erState.puzzlesSolved.filter((id) => typeof id === 'number');
+          if (success && method === 'submitPuzzle') verifiedHere.add(puzzleId);
+
+          /*
+           * Take the server's post-submission list from the NESTED erState.
+           *
+           * This used to read `erState.puzzlesSolved` off the response body,
+           * where there is no such field. So serverSolved kept whatever
+           * validate() put there at boot (an empty list for a fresh team)
+           * while the client's own list grew, and authoritativeSolved read
+           * "server has fewer" as a progress reset and handed back the stale
+           * empty list. The player's own verified solve was discarded, no
+           * stage was ever unlocked, and the proceed control never appeared;
+           * for the SOLVER only, because a teammate is updated from a real
+           * erState over the websocket instead.
+           */
+          const newState = response?.erState;
+          if (Array.isArray(newState?.puzzlesSolved)) {
+            serverSolved = newState.puzzlesSolved.filter((id) => typeof id === 'number');
           }
-          stateListener?.(readSolved(), erState);
+          if (newState?.startTime != null) runId = String(newState.startTime);
+          stateListener?.(readSolved(), newState);
           done({ verified: success, reachedServer: true });
         });
       } catch (e) {

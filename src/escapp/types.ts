@@ -39,19 +39,43 @@ export type EscappCallbackName =
   | 'onErRestartCallback';
 
 /** The live Escapp client instance. */
+/**
+ * What submitPuzzle/checkPuzzle actually hand their callback.
+ *
+ * NOT an ErState. Verified in the Escapp client: the submit handler ends with
+ * `_safeCall(cb, correct, t)` where `t` is the parsed RESPONSE BODY, and the
+ * server builds that body as {code, correctAnswer, participation,
+ * authentication, msg, alreadySolved, erState}. The escape-room state is
+ * therefore NESTED under `erState`, and `msg` is top level.
+ *
+ * This was typed as ErState, which is structurally compatible because every
+ * field of ErState is optional: the compiler was happy, `body.puzzlesSolved`
+ * was silently undefined, and the server's post-submit progress was dropped on
+ * the floor. Hence the separate type.
+ */
+export interface PuzzleResponse {
+  code?: string;
+  correctAnswer?: boolean;
+  alreadySolved?: boolean;
+  /** Present on failed submissions / connection problems. */
+  msg?: string;
+  /** The real escape-room state, after the submission was applied. */
+  erState?: ErState;
+}
+
 export interface EscappClient {
   validate(cb: (success: boolean, erState?: ErState) => void): void;
   submitPuzzle(
     puzzleId: number,
     solution: string,
     options: Record<string, unknown>,
-    cb: (success: boolean, erState?: ErState) => void,
+    cb: (success: boolean, response?: PuzzleResponse) => void,
   ): void;
   checkPuzzle(
     puzzleId: number,
     solution: string,
     options: Record<string, unknown>,
-    cb: (success: boolean, erState?: ErState) => void,
+    cb: (success: boolean, response?: PuzzleResponse) => void,
   ): void;
   getSolvedPuzzles(): number[];
   getUnsolvedPuzzles(): number[];
