@@ -89,21 +89,21 @@ describe('only the tangent touches once', () => {
     }
   });
 
-  it('gives -17 at the first hold and -11 at the second', () => {
-    expect(dP(timeAtPressure(34))).toBeCloseTo(-17, 8);
-    expect(dP(timeAtPressure(22))).toBeCloseTo(-11, 8);
+  it('gives -20 at the first hold and -9 at the second', () => {
+    expect(dP(timeAtPressure(40))).toBeCloseTo(-20, 8);
+    expect(dP(timeAtPressure(18))).toBeCloseTo(-9, 8);
   });
 
   it('the first hold is unsafe and the second is safe, so the decision is real', () => {
     expect(ventSafe(VENT_HOLDS[0])).toBe(false);
     expect(ventSafe(VENT_HOLDS[1])).toBe(true);
-    expect(Math.abs(dP(timeAtPressure(34)))).toBeGreaterThan(VENT_RATE_LIMIT);
-    expect(Math.abs(dP(timeAtPressure(22)))).toBeLessThanOrEqual(VENT_RATE_LIMIT);
+    expect(Math.abs(dP(timeAtPressure(40)))).toBeGreaterThan(VENT_RATE_LIMIT);
+    expect(Math.abs(dP(timeAtPressure(18)))).toBeLessThanOrEqual(VENT_RATE_LIMIT);
   });
 });
 
 describe('chord mode shows the limit', () => {
-  const t0 = timeAtPressure(22);
+  const t0 = timeAtPressure(18);
   const chord = (gap: number) => (P(t0 + gap) - P(t0)) / gap;
 
   it('the chord gradient approaches the tangent as the gap shrinks', () => {

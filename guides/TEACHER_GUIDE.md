@@ -309,14 +309,14 @@ slider positions touches, and that is checked in the test suite.
 
 | Burst | Gauge | Tangent gradient | Under 12? | Action |
 |---|---|---|---|---|
-| 1 | 34 kPa | **-17** kPa/min | ✗ | Let more pressure out |
-| 2 | 22 kPa | **-11** kPa/min | ✓ | **Run the door motor** |
+| 1 | 40 kPa | **-20** kPa/min | ✗ | Let more pressure out |
+| 2 | 18 kPa | **-9** kPa/min | ✓ | **Run the door motor** |
 
 Running the motor at burst 1 is a real failure: the escaping air slams the
 door and jams the motor. It is recoverable, the console says why, and the valve
 only has charge for two bursts.
 
-**Answer submitted to Escapp:** `22;11;RELEASE`
+**Answer submitted to Escapp:** `18;9;RELEASE`
 
 #### Chord mode: the definition of a derivative, on a slider
 
@@ -375,7 +375,7 @@ number tells you nothing about what the result means.
 
 #### An extension for a strong class
 
-Having measured -17 at 34 kPa and -11 at 22 kPa, ask what they notice. Both are
+Having measured -20 at 40 kPa and -9 at 18 kPa, ask what they notice. Both are
 half the gauge reading. That is $dP/dt = -0.5P$: **the rate of change is
 proportional to how much is left**, which is the defining property of
 exponential decay and the same mathematics as radioactive decay or a cooling
@@ -554,7 +554,7 @@ stage is scene-setting.
 | "Coldest is safest" | Choose minute 4 | "How much air does she have? When does minute 4 arrive?" |
 | "Stationary point = maximum" | Don't classify | "How do you know it's a maximum and not a minimum? Check Q″, or check the sign of Q′ either side" |
 | "The game wants a number" | Hunt for a code to type | "You're not entering a password. You're setting a machine. What does the machine need to do?" |
-| Confuses pressure with how fast it falls | Enter 22 at the 22 kPa hold | Console rejects it. "What are the units on the field? Is 22 a pressure or a speed?" |
+| Confuses pressure with how fast it falls | Reads 18 off the gauge and treats it as the speed | "What are the units? Is 18 a pressure or a speed? The rule is about speed" |
 | Thinks the time is needed in stage 5 | Stuck looking for elapsed time | "The gauge only shows pressure. Read the rule in the valve report again" |
 | Thinks any line through the point is a tangent | Accept a line that visibly cuts the curve | "Follow your line past the point. Does it stay on one side of the curve, or go through it?" |
 | Thinks the chord gradient is the rate | Use chord mode and stop there | "Slide the second point closer. Does the number settle anywhere?" |
@@ -565,11 +565,11 @@ stage is scene-setting.
 
 | Stage | Key mathematics | Result | Submitted |
 |---|---|---|---|
-| 1 |: | Badge 417 | `417` |
-| 2 | Q′(x) = −4x + 12; Q′ = 0 at x = 3; Q″ < 0; Q(3) = 23 ≥ 22. Declared flow at the chosen setting must match Q(x) | Setting **3**, declaring **23** L/min | `3` |
+| 1 | none | Badge 417 | `417` |
+| 2 | Q′(x) = −4x + 12; Q′ = 0 at x = 3; Q″ < 0; Q(3) = 23 ≥ 22. The flow entered before starting must match Q(x) | Setting **3**, entering **23** L/min | `3` |
 | 3 | Chord over [0,2] = −6 (wrong branch); tangent T′(2) = −4, and \|−4\| ≤ 5 | Enter **−4**, then **maintain cooling** | `MAINTAIN` |
 | 4 | Solve (t−3)(t−5) ≤ 0 → [3,5]; 2t−8 ≤ 0 → t ≤ 4; air → t ≤ 3.5. Intersection [3, 3.5] | Release at **t = 3** | `3;15;-2` |
-| 5 |: (recall) | 3 / MAINTAIN / 3 | `3;MAINTAIN;3` |
+| 5 | Build the tangent on P(t) at each gauge reading. At 40 kPa: falling 20 kPa/min (over 12). At 18 kPa: 9 kPa/min (under 12) | Two bursts, open at **18 kPa** | `18;9;RELEASE` |
 
 All of the above is verified automatically by the test suite
 (`npm test` → `tests/model.test.ts`), including that no mathematically incorrect

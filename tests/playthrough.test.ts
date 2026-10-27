@@ -168,13 +168,13 @@ describe('wrong answers never grant progress', () => {
       // Fired at the first hold, where the rate exceeds the actuator limit.
       `${unsafeHold};${pressureFallRate(unsafeHold)};RELEASE`,
       // Right hold, gave the pressure instead of the rate.
-      '22;22;RELEASE',
+      '18;18;RELEASE',
       // Right hold, gave only the decay constant.
-      '22;0.5;RELEASE',
+      '18;0.5;RELEASE',
       // Right hold, doubled instead of halved.
-      '22;44;RELEASE',
+      '18;36;RELEASE',
       // Right rate, wrong action.
-      '22;11;VENT',
+      '18;9;VENT',
     ]) {
       const r = await adapter.submit(5, bad);
       expect(r.verified, `actuation ${bad} must be refused`).toBe(false);

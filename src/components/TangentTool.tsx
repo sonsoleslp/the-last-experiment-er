@@ -36,7 +36,7 @@
  * interval becoming the rate at an instant.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { P, VENT_K, VENT_P0, VENT_RATE_LIMIT, dP } from '../game/model';
 
 const W = 460;
@@ -139,6 +139,22 @@ export const TangentTool = ({
   const crosses = useMemo(() => crossesAtPoint(t0, pressure, m), [t0, pressure, m]);
   const isTangent = !crosses && Math.abs(m - trueGradient) < TOLERANCE;
 
+  /*
+   * Finding the tangent IS the reading, so it is reported straight away
+   * instead of behind a "use this gradient" button. That removed a click and,
+   * more usefully, a concept: there is no longer a separate idea of
+   * "declaring" a value to the console.
+   */
+  const reported = useRef(false);
+  useEffect(() => {
+    if (locked) return;
+    if (isTangent && !reported.current) {
+      reported.current = true;
+      onResult({ gradient: m, isTangent: true });
+    }
+    if (!isTangent) reported.current = false;
+  }, [isTangent, locked, m, onResult]);
+
   // The curve.
   const path = useMemo(() => {
     const steps = 160;
@@ -174,12 +190,45 @@ export const TangentTool = ({
 
   return (
     <div className="tangent">
-      {/* A standing instruction, so the tool explains itself before it reacts. */}
+      {/*
+        The goal, stated as a sum with the unknown marked, and visible at all
+        times rather than only once the tangent is found. A player who looks at
+        this panel cold should be able to see what is being asked.
+      */}
+      <div className="tangent-goal">
+        <span>
+          Pressure now <b className="mono">{pressure} kPa</b>
+        </span>
+        <span aria-hidden="true">·</span>
+        <span>
+          falling at{' '}
+          <b className="mono" data-unknown={!isTangent}>
+            {isTangent ? `${Math.abs(m).toFixed(0)} kPa/min` : '? kPa/min'}
+          </b>
+        </span>
+        <span aria-hidden="true">·</span>
+        <span>
+          door opens below <b className="mono">{VENT_RATE_LIMIT} kPa/min</b>
+        </span>
+      </div>
+
       <p className="tangent-task">
         Tilt the line until it <strong>only touches</strong> the curve, without cutting through it.
-        That line is the tangent, and its steepness is how fast the pressure is falling. The motor
-        needs that below <strong className="mono">{VENT_RATE_LIMIT} kPa/min</strong>.
       </p>
+
+      <details className="why">
+        <summary>Why tilt a line?</summary>
+        <p>
+          The curve is steep at the start and flatter later, so the speed the pressure falls at
+          keeps changing. There is no single number to read off it.
+        </p>
+        <p>
+          A straight line that just touches the curve at one point has the{' '}
+          <strong>same steepness as the curve right there</strong>. So once your line only touches,
+          how steep the line is tells you how fast the pressure is falling at that moment. That
+          line is called the <strong>tangent</strong>.
+        </p>
+      </details>
 
       <div className="tangent-modes" role="group" aria-label="Measuring tool">
         <button
@@ -188,7 +237,7 @@ export const TangentTool = ({
           style={mode === 'tangent' ? { borderColor: 'var(--cyan)', color: 'var(--cyan)' } : undefined}
           onClick={() => setMode('tangent')}
         >
-          Tangent (rate right now)
+          Tangent
         </button>
         <button
           className="btn btn-sm"
@@ -196,7 +245,7 @@ export const TangentTool = ({
           style={mode === 'chord' ? { borderColor: 'var(--amber)', color: 'var(--amber)' } : undefined}
           onClick={() => setMode('chord')}
         >
-          Chord (average rate)
+          Chord (optional)
         </button>
       </div>
 
@@ -314,14 +363,7 @@ export const TangentTool = ({
                 : 'This line cuts through the curve instead of touching it. Keep tilting until it rests against the curve without crossing it.'}
           </p>
 
-          <button
-            className="btn btn-primary btn-sm"
-            style={{ width: '100%' }}
-            disabled={!isTangent || locked}
-            onClick={() => onResult({ gradient: m, isTangent })}
-          >
-            {locked ? '✓ Reading accepted' : 'Use this gradient as the reading'}
-          </button>
+
         </>
       ) : (
         <>

@@ -53,7 +53,7 @@ describe('no hint gives an answer away', () => {
     ['stage 3 rate', /-\s?4\s?°?C|\bminus four\b/],
     ['stage 3 chord trap value', /-\s?6\s?°?C/],
     ['stage 4 release time', /\bt = 3\b|\bminute 3\b|\bminute three\b/],
-    ['stage 5 hold pressure', /\b22 kPa\b/],
+    ['stage 5 hold pressure', /\b18 kPa\b/],
     ['stage 5 gradient', /\b-?11\b/],
     ['stage 5 unsafe gradient', /\b-?17\b/],
   ];

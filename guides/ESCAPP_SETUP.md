@@ -45,7 +45,7 @@ these solutions:
 | 2 | Restore the Cooling System | `3` | Calibrated the pump to the setting that maximises flow and meets 22 L/min |
 | 3 | The Temperature Crisis | `MAINTAIN` | Chose the intervention justified by T′(2) = −4 °C/min |
 | 4 | The Rescue Window | `3;15;-2` | Authorised release at t = 3 min, with T(3) = 15 °C and T′(3) = −2 °C/min |
-| 5 | Emergency Release | `22;11;RELEASE` | Vented twice, derived dP/dt = −kP = −0.4 × 21 from the gauge, and fired the actuator |
+| 5 | Emergency Release | `18;9;RELEASE` | Vented twice, derived dP/dt = −kP = −0.4 × 21 from the gauge, and fired the actuator |
 
 Copy the solution strings **exactly** (no trailing spaces are needed: see the
 note on matching below).
@@ -329,7 +329,7 @@ Fault injection, for checking the reconnection UI:
 - [ ] Three hints per puzzle, pasted from [guides/ESCAPP_HINTS.md](ESCAPP_HINTS.md), and a hint allowance set.
 - [ ] `rtc: true` so team synchronisation works (preview forces it off).
 - [ ] If you plan to project the briefing, check `?interface=class` opens the cinematic with no sign-in.
-- [ ] Solutions copied exactly: especially `3;15;-2` and `22;11;RELEASE`.
+- [ ] Solutions copied exactly: especially `3;15;-2` and `18;9;RELEASE`.
 - [ ] Duration set (60 min suggested) and teams created (3–4 students).
 - [ ] App built and attached; opening it shows the mission briefing with **no**
       SIMULATED or AUTHOR PREVIEW banner.
@@ -356,7 +356,7 @@ are completely different. Each one also prints the adapter's specific diagnosis.
 | Hangs forever on "ESTABLISHING FACILITY UPLINK" | Was a bug in this app (a React StrictMode double-mount discarded the boot result) | Fixed; covered by a regression test in `tests/provider.test.tsx` |
 | Stage 1 verifies but stages stay locked | Puzzle **order** doesn't match, or fewer than 5 puzzles exist | Re-check that the puzzle list is in the order in §2 |
 | A correct answer is rejected | The puzzle's solution in Escapp does not match what the game submits | The app detects this and shows a red **"Escape room setup problem"** banner naming the puzzle and the exact string to configure. Re-paste from the table in §2 |
-| A stage cannot be completed at all | Same cause. Most likely a solution left over from an earlier version of the room | Check the banner. Puzzle 5's solution in particular is `22;11;RELEASE` |
+| A stage cannot be completed at all | Same cause. Most likely a solution left over from an earlier version of the room | Check the banner. Puzzle 5's solution in particular is `18;9;RELEASE` |
 | Progress resets on reload while authoring | You are in `preview: true` | Expected: Escapp does not record an author's practice run. See §5 |
 | Local preview fails instantly with no login dialog | Preview is silent and needs a token in the URL | Append `?escapp_email=…&escapp_token=…`, or launch from Escapp's test mode. See §5 |
 | Teammates don't see each other's progress | `rtc: false`, or the room is in preview mode | Set `rtc: true` and `preview: false`; preview forces rtc off |

@@ -3,7 +3,7 @@
  *
  * This exists because of a trap I built. Puzzle 5's solution changed twice
  * while the stage was being redesigned (`3;MAINTAIN;3` -> `21;-8.4;RELEASE` ->
- * `22;11;RELEASE`). If the escape room still has an older value configured,
+ * `18;9;RELEASE`). If the escape room still has an older value configured,
  * Escapp rejects the one correct answer, the stage becomes impossible, and the
  * message the student used to see was "re-check your tangent reading", which
  * blamed them for someone else's configuration.
@@ -51,7 +51,7 @@ describe('detecting a stale configured solution', () => {
    * check is what tells them.
    */
   it('treats the superseded puzzle 5 solutions as plain wrong answers', () => {
-    for (const old of ['3;MAINTAIN;3', '21;-8.4;RELEASE']) {
+    for (const old of ['3;MAINTAIN;3', '21;-8.4;RELEASE', '22;11;RELEASE']) {
       expect(old).not.toBe(puzzleForStage(5).solution);
       expect(isConfigMismatch(5, old, false, true)).toBe(false);
     }

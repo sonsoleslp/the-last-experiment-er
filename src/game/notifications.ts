@@ -62,7 +62,7 @@ export const stageSolvedToast = (stage: number): ToastData | null => {
       return {
         tone: 'ok',
         title: 'DOOR OPEN',
-        body: `At ${hold} kPa the pressure was falling at ${formatPressureRate(pressureFallRate(hold))}, slow enough for the motor. The wedges pulled back and the chamber is open.`,
+        body: `With the pressure falling at only ${formatPressureRate(pressureFallRate(hold))}, slow enough to be safe, the wedges pulled back and the chamber is open.`,
       };
     }
     default:

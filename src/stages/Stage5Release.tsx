@@ -32,8 +32,8 @@
  * than the second.
  *
  * Two vent bursts, so there is a real decision with a consequence:
- *   burst 1 -> 34 kPa -> tangent gradient -17, over the 12 limit -> vent again
- *   burst 2 -> 22 kPa -> tangent gradient -11, within the limit  -> run it
+ *   burst 1 -> 40 kPa -> tangent gradient -20, over the 12 limit -> vent again
+ *   burst 2 -> 18 kPa -> tangent gradient  -9, within the limit  -> open it
  * Running the motor at burst 1 jams the door: recoverable, and loud about why.
  */
 
@@ -150,8 +150,11 @@ export const Stage5Release = () => {
     dispatch({ type: 'armActuator', value: true });
     setToast({
       tone: 'ok',
-      title: 'MOTOR UNLOCKED',
-      body: `Your tangent gives ${formatPressureRate(gradient)}. The motor needs it below ${VENT_RATE_LIMIT} kPa/min. Run the motor, or let more pressure out first?`,
+      title: `FALLING AT ${formatPressureRate(gradient)}`,
+      body:
+        Math.abs(gradient) <= VENT_RATE_LIMIT
+          ? `That is under the ${VENT_RATE_LIMIT} kPa/min limit, so the door can be opened safely. Pull the lever.`
+          : `That is over the ${VENT_RATE_LIMIT} kPa/min limit. Opening the door now would empty the rest of the pressure past her in one rush. Let more out first.`,
     });
   };
 
@@ -169,7 +172,7 @@ export const Stage5Release = () => {
       setToast({
         tone: 'bad',
         title: 'DOOR MOTOR JAMMED',
-        body: `At ${holdPressure} kPa the pressure was falling at ${formatPressureRate(pressureFallRate(holdPressure))}, over the ${VENT_RATE_LIMIT} kPa/min limit. The rush of escaping air slammed the door shut and jammed the motor. Ease it back, let more pressure out, and try again when it is falling more slowly.`,
+        body: `The pressure was still falling at ${formatPressureRate(pressureFallRate(holdPressure))}, over the ${VENT_RATE_LIMIT} kPa/min limit. The rest of it emptied through the doorway in one rush and slammed the door, jamming the motor. Ease it back, let more pressure out, and try again once it is falling more slowly.`,
       });
       return;
     }
@@ -260,8 +263,8 @@ export const Stage5Release = () => {
                   Coolant restored at dial setting 3, the highest point of the pump's curve.
                   Cooling left alone because the temperature was falling at 4 °C per minute, inside
                   the 5 °C limit. Door agreed for the earliest minute where all three rules held.
-                  Motor run at 22 kPa, where the pressure was falling at half of that, 11 kPa per
-                  minute, under the 12 limit.
+                  Door opened at 18 kPa, where the pressure was falling at 9 kPa per minute, under
+                  the 12 kPa/min limit.
                 </p>
               </div>
               {allSolved && <Chip tone="ok">All five stages verified by Escapp</Chip>}
@@ -284,7 +287,7 @@ export const Stage5Release = () => {
             ? 'The motor stalled. Clear the fault and vent further.'
             : armed
               ? `Actuator limit ${VENT_RATE_LIMIT} kPa/min: fire, or vent again.`
-              : 'Build the tangent on the curve to measure how fast the pressure is falling.'
+              : 'The gauge shows how high the pressure is. Measure how FAST it is falling.'
       }
       stats={[
         {
@@ -368,10 +371,10 @@ export const Stage5Release = () => {
             {/* -------------------------------------------- the motor */}
             <div className="lever-housing">
               <Readout
-                label="From your tangent"
+                label="Falling at"
                 value={measured !== null ? formatPressureRate(measured) : '––'}
                 tone={armed ? (safe ? 'good' : 'bad') : undefined}
-                note={`Actuator fires below ${VENT_RATE_LIMIT} kPa/min`}
+                note={`The door opens below ${VENT_RATE_LIMIT} kPa/min`}
               />
 
               <button

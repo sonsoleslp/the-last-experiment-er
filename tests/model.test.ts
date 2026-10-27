@@ -398,11 +398,11 @@ describe('Stage 5 — exponential pressure vent', () => {
   });
 
   it('gives whole-number rates, so the arithmetic is a halving', () => {
-    expect(pressureFallRate(34)).toBe(17);
-    expect(pressureFallRate(22)).toBe(11);
-    expect(formatPressureRate(pressureRate(22))).toBe('11 kPa/min');
+    expect(pressureFallRate(40)).toBe(20);
+    expect(pressureFallRate(18)).toBe(9);
+    expect(formatPressureRate(pressureRate(18))).toBe('9 kPa/min');
     // k = 0.5 exactly, so the rule really is "half the gauge reading".
-    for (const p of [10, 22, 34, 40, 90]) expect(pressureFallRate(p)).toBe(p / 2);
+    for (const p of [10, 18, 40, 44, 90]) expect(pressureFallRate(p)).toBe(p / 2);
   });
 
   /**
@@ -429,16 +429,16 @@ describe('Stage 5 — exponential pressure vent', () => {
    * punished for being more precise than the question asked.
    */
   it('accepts the fall rate with or without a minus sign', () => {
-    expect(pressureRateMatches(22, 11)).toBe(true);
-    expect(pressureRateMatches(22, -11)).toBe(true);
+    expect(pressureRateMatches(18, 9)).toBe(true);
+    expect(pressureRateMatches(18, -9)).toBe(true);
   });
 
   it('still rejects the genuine mistakes', () => {
-    expect(pressureRateMatches(22, 22)).toBe(false); // gave the pressure
-    expect(pressureRateMatches(22, 0.5)).toBe(false); // gave only k
-    expect(pressureRateMatches(22, 17)).toBe(false); // the other hold's rate
-    expect(pressureRateMatches(22, 44)).toBe(false); // doubled instead of halved
-    expect(pressureRateMatches(22, Number.NaN)).toBe(false);
+    expect(pressureRateMatches(18, 18)).toBe(false); // gave the pressure
+    expect(pressureRateMatches(18, 0.5)).toBe(false); // gave only k
+    expect(pressureRateMatches(18, 20)).toBe(false); // the other hold's rate
+    expect(pressureRateMatches(18, 36)).toBe(false); // doubled instead of halved
+    expect(pressureRateMatches(18, Number.NaN)).toBe(false);
   });
 
   it('firing at the first hold is genuinely unsafe, so the mistake is real', () => {

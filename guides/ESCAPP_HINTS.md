@@ -120,23 +120,26 @@ in, so you can edit the wording here safely.
 
 **Hint 1**
 
-> Open the release valve. It lets some pressure out, then holds so you can read
-> the gauge. The motor will not run until you have measured how fast the
-> pressure is falling.
+> Open the release valve. It lets some pressure out, then holds. The gauge now
+> tells you how HIGH the pressure is, but the rule for opening the door is
+> about how FAST it is falling. Those are two different numbers.
 
 **Hint 2**
 
 > The curve is steep at the start and flatter later, so the falling speed keeps
-> changing. The console tool draws a straight line through your point. Try
-> tilting it and watch what the line does to the curve.
+> changing and there is no single number to read off it. The console tool draws
+> a straight line through your point. Try tilting it and watch what the line
+> does to the curve.
 
 **Hint 3**
 
-> There is exactly one tilt where the line touches the curve and does not cut
-> through it anywhere else. That line is the tangent, and how steep it is IS
-> the speed the pressure is falling. If you would rather predict it than hunt
-> for it, the valve report has a cross-check that tells you the speed from the
-> gauge reading alone. Either way, compare the number with the motor limit.
+> There is exactly one tilt where the line touches the curve without cutting
+> through it. That line is called the tangent, and a line like that has the
+> same steepness as the curve at that point, so how steep it is IS the speed
+> the pressure is falling. If you would
+> rather predict the number than hunt for it, the valve report has a shortcut
+> that gets it from the gauge reading alone. Either way, compare it with the
+> limit for opening the door.
 
 ---
 

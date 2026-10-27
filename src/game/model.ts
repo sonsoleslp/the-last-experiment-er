@@ -280,10 +280,14 @@ export const VENT_RATE_LIMIT = 12;
  * Pressures the vent cycle holds at, in order. Two cycles only; the vent
  * charge is spent after the second, so there is no third guess to take.
  *
- * Hold 1: 34 kPa -> falling at 17 kPa/min, over the 12 limit -> vent again
- * Hold 2: 22 kPa -> falling at 11 kPa/min, within the limit  -> run the motor
+ * Hold 1: 40 kPa -> falling at 20 kPa/min, over the 12 limit -> vent again
+ * Hold 2: 18 kPa -> falling at  9 kPa/min, within the limit  -> open the door
+ *
+ * Chosen so that nothing on screen looks like anything else. With the previous
+ * 34/22 the player saw a gauge of 22, a limit of 12 and an answer of 11, which
+ * was three similar numbers in three different units.
  */
-export const VENT_HOLDS = [34, 22] as const;
+export const VENT_HOLDS = [40, 18] as const;
 
 /** Is the actuator permitted to fire at this measured pressure? */
 export const ventSafe = (pressure: number): boolean =>
@@ -316,7 +320,7 @@ export const pressureRateMatches = (pressure: number, declared: number): boolean
   return Math.abs(Math.abs(declared) - expected) < RATE_TOLERANCE;
 };
 
-/** Format a fall rate for the console, e.g. "11 kPa/min". */
+/** Format a fall rate for the console, e.g. "9 kPa/min". */
 export const formatPressureRate = (r: number): string => {
   const v = Math.abs(r);
   return `${Number.isInteger(v) ? v : v.toFixed(1)} kPa/min`;

@@ -112,8 +112,8 @@ describe('the shared notification', () => {
     expect(stageSolvedToast(2)!.body).toContain('setting 3');
     expect(stageSolvedToast(3)!.body).toContain('-4.0');
     expect(stageSolvedToast(4)!.title).toContain('3 MIN');
-    expect(stageSolvedToast(5)!.body).toContain('22 kPa');
-    expect(stageSolvedToast(5)!.body).toContain('11 kPa/min');
+    expect(stageSolvedToast(5)!.body).toContain('9 kPa/min');
+    expect(stageSolvedToast(5)!.body.length).toBeGreaterThan(30);
   });
 
   it('has nothing for a stage that does not exist', () => {

@@ -63,9 +63,9 @@ export const PUZZLES: PuzzleSpec[] = [
     id: 5,
     stage: 5,
     title: 'Emergency Release',
-    solution: '22;11;RELEASE',
+    solution: '18;9;RELEASE',
     meaning:
-      'The final step: the pressure on the gauge, how fast it is falling (half of 22, from dP/dt = -0.5P, which the valve report states), and the action taken. Reaching this needs two vent bursts, because at the first hold the pressure is still falling too fast for the door motor.',
+      'The final step: the pressure on the gauge, how fast it is falling (half of 18, measured by building a tangent on the pressure curve), and the action taken. Reaching this needs two vent bursts, because after the first the pressure is still falling too fast to open the door safely.',
   },
 ];
 
