@@ -54,6 +54,34 @@ set your endpoint: see [guides/ESCAPP_SETUP.md](guides/ESCAPP_SETUP.md) §5.
 
 ---
 
+## Classroom display mode
+
+```
+?interface=class
+```
+
+Plays the opening cinematic and nothing else, with **no Escapp session and no
+sign-in**. It is for the projector at the front of the room: show the briefing
+to the whole class, then let teams open the escape room on their own machines
+and log in.
+
+When the cinematic ends it offers to play it again rather than entering the
+game, because there is no authenticated team in this mode and so nothing to
+enter.
+
+It authenticates nobody and therefore records nothing: no puzzle can be
+submitted and no progress is stored. **No Escapp client is constructed at
+all** — the route is mounted outside the providers on purpose, because
+`EscappProvider` boots the client as soon as it mounts and the client would
+then put a sign-in dialog up on the projector. That is asserted in
+`tests/classroom.test.tsx`.
+
+Because it needs no account, it works on a public URL as-is:
+
+```
+https://<user>.github.io/<repo>/?interface=class
+```
+
 ## Deploying
 
 `npm run build` writes the bundle to **`docs/`**, which is both the folder to
@@ -141,6 +169,7 @@ Fault injection for exercising the reconnection UI:
 
 | URL parameter | Effect |
 |---|---|
+| `?interface=class` | Classroom display: the cinematic only, no sign-in |
 | `?mock=1` | Force the mock adapter |
 | `?mock=1&escappFail=1` | Submissions never reach the server |
 | `?mock=1&escappOffline=1` | The client never connects |

@@ -140,7 +140,7 @@ const BootScreen = ({
 
 const Game = () => {
   const { unlockedStage } = useEscapp();
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
   const [viewStage, setViewStage] = useState(1);
 
   /*
@@ -205,7 +205,7 @@ const Game = () => {
     if (state.briefingSeen) setScene(SCENES[stage] ?? 'lab');
   }, [stage, state.briefingSeen]);
 
-  if (!state.briefingSeen) return <Intro />;
+  if (!state.briefingSeen) return <Intro onFinish={() => dispatch({ type: 'seeBriefing' })} />;
 
   return (
     <>

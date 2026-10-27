@@ -162,6 +162,26 @@ You need `preview: false`, `rtc: true`, and two participant accounts on the
 same team in a running turn. Open the app in two browsers, solve a puzzle in
 one, and watch the other announce it and catch up.
 
+## 3b. Classroom display mode
+
+Append **`?interface=class`** to the app's URL and it plays the opening
+cinematic and nothing else, with **no sign-in**:
+
+```
+https://your-host/the-last-experiment/?interface=class
+```
+
+This is for the projector. Show the briefing to the whole class, then have
+teams open the normal URL on their own machines and log in to Escapp.
+
+It authenticates nobody, so it records nothing and no puzzle can be submitted
+from it. No Escapp client is created at all, which is the point: otherwise the
+client would boot, find no participant, and display a sign-in dialog on the
+projector in front of the class.
+
+When the cinematic finishes it offers to replay it rather than entering the
+game.
+
 ## 4. Attach the application
 
 ### Option A: hosted by Escapp (recommended for class use)
@@ -304,6 +324,7 @@ Fault injection, for checking the reconnection UI:
 - [ ] Exactly **five** puzzles, in order, with the solutions from the table above.
 - [ ] Three hints per puzzle, pasted from [guides/ESCAPP_HINTS.md](ESCAPP_HINTS.md), and a hint allowance set.
 - [ ] `rtc: true` so team synchronisation works (preview forces it off).
+- [ ] If you plan to project the briefing, check `?interface=class` opens the cinematic with no sign-in.
 - [ ] Solutions copied exactly: especially `3;15;-2` and `22;11;RELEASE`.
 - [ ] Duration set (60 min suggested) and teams created (3–4 students).
 - [ ] App built and attached; opening it shows the mission briefing with **no**

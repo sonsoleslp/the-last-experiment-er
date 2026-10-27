@@ -24,11 +24,15 @@
  *
  * Captions are always rendered in audio and silent modes; the narration is
  * never the only way to receive the story.
+ *
+ * This component is deliberately presentational: what happens when the
+ * cinematic ends is the caller's business (`onFinish`). That is what lets it be
+ * reused for the classroom display mode, which has no game to enter and no
+ * Escapp session at all, so it cannot depend on GameProvider.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { setScene, unlock } from '../audio/engine';
-import { useGame } from '../game/GameProvider';
 import { BEAT_GAP_MS, INTRO_BEATS, INTRO_DURATION, assetUrl, beatAudioUrl } from '../game/intro';
 import { IntroVignette } from './IntroVignette';
 
@@ -38,8 +42,7 @@ const VIDEO_SRC = assetUrl('media/intro.mp4');
 const AUDIO_SRC = assetUrl('media/intro.mp3');
 const PROBE_TIMEOUT_MS = 2500;
 
-export const Intro = () => {
-  const { dispatch } = useGame();
+export const Intro = ({ onFinish }: { onFinish: () => void }) => {
   const [mode, setMode] = useState<Mode>('probing');
   const [started, setStarted] = useState(false);
   const [t, setT] = useState(0);
@@ -59,8 +62,8 @@ export const Intro = () => {
     } catch {
       /* ignore */
     }
-    dispatch({ type: 'seeBriefing' });
-  }, [dispatch]);
+    onFinish();
+  }, [onFinish]);
 
   /* ----------------------------------------------------- media detection */
 
