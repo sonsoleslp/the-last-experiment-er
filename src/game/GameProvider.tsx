@@ -16,6 +16,7 @@ import {
 import { useEscapp } from '../escapp/EscappProvider';
 import {
   GAME_STATE_KEY,
+  RUN_MARKER_KEY,
   gameReducer,
   hydrateGameState,
   initialGameState,
@@ -40,33 +41,56 @@ export const useGame = (): GameContextValue => {
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { storage, runId, status } = useEscapp();
   const [state, dispatch] = useReducer(gameReducer, initialGameState);
-  const hydratedRef = useRef(false);
+  /**
+   * Which run we have already loaded state for. Keyed on the run rather than a
+   * plain boolean, so that a start time changing mid-session (a teacher
+   * restarting the room) is noticed rather than ignored.
+   */
+  const loadedForRun = useRef<string | null | undefined>(undefined);
 
   /*
-   * Restore exploration state once Escapp storage AND the run id are known.
+   * Load local state, or wipe it if this is a different run.
    *
-   * Waiting for the run id matters: state is discarded unless it belongs to
-   * this run and this schema version, which is what stops a previous
-   * playthrough's machinery (a spent vent valve, a running pump) leaking into
-   * a fresh one. See STATE_VERSION in gameState.ts.
+   * By the time status is 'ready' the adapter has settled the run id, so a
+   * comparison here is meaningful. If the stored marker names a different run,
+   * everything the previous team built locally is discarded: otherwise a new
+   * team starts in a laboratory with the cabinet already open, the pump
+   * already running and the vent valve already spent.
    */
   useEffect(() => {
-    if (hydratedRef.current || !storage || status !== 'ready') return;
-    hydratedRef.current = true;
+    if (!storage || status !== 'ready') return;
+    if (loadedForRun.current === runId) return;
+
     try {
-      const raw = storage.getSetting(GAME_STATE_KEY);
-      if (raw !== undefined && raw !== null) {
+      const marker = storage.getSetting(RUN_MARKER_KEY);
+      const previousRun = typeof marker === 'string' ? marker : null;
+      const isNewRun = previousRun !== null && runId !== null && previousRun !== runId;
+
+      if (isNewRun) {
+        storage.removeSetting(GAME_STATE_KEY);
+        try {
+          sessionStorage.clear();
+        } catch {
+          /* private browsing */
+        }
+        dispatch({ type: 'reset' });
+      } else {
+        const raw = storage.getSetting(GAME_STATE_KEY);
         dispatch({ type: 'hydrate', value: hydrateGameState(raw, runId) });
       }
+
+      storage.saveSetting(RUN_MARKER_KEY, runId);
     } catch (e) {
       console.warn('Game: could not restore local state', e);
     }
-  }, [storage, runId, status]);
+
+    loadedForRun.current = runId;
+  }, [storage, status, runId]);
 
   // Persist on every change, but only after hydration so we never overwrite a
   // saved blob with the defaults on first paint.
   useEffect(() => {
-    if (!storage || !hydratedRef.current) return;
+    if (!storage || loadedForRun.current === undefined) return;
     try {
       storage.saveSetting(GAME_STATE_KEY, packGameState(state, runId));
     } catch (e) {

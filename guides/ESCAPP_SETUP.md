@@ -186,6 +186,32 @@ projector in front of the class.
 When the cinematic finishes it offers to replay it rather than entering the
 game.
 
+## 3c. A new team starts from scratch
+
+Escapp identifies a run by the escape room's **start time**. When a new team
+starts, everything this browser built locally is wiped: the opened cabinet, the
+running pump, the collected card, the spent vent valve. Otherwise a new team
+would walk into rooms the previous team had already been through.
+
+There are two independent guards, because one is not enough:
+
+1. **The stored state names its run.** Anything belonging to a different start
+   time is refused on load, even if nothing wiped it.
+2. **A run marker is compared on every boot**, and a mismatch wipes. This
+   matters because the Escapp client's own restart callback cannot be relied on
+   alone: it early-returns in preview mode, so in preview it never fires at all.
+
+Escapp's own record of solved puzzles is handled by the client: when the start
+time changes it replaces its stored state with the server's, and in preview
+mode it clears its storage on every load. So verified progress was never the
+stale part; only the room state was.
+
+What is deliberately **not** wiped is the sound on/off choice, which is a
+per-person preference rather than progress.
+
+If you need to force a clean slate without restarting the room, clear the site
+data for the page in the browser, or just restart the turn in Escapp.
+
 ## 4. Attach the application
 
 ### Option A: hosted by Escapp (recommended for class use)
@@ -363,3 +389,4 @@ are completely different. Each one also prints the adapter's specific diagnosis.
 | A refresh sends the player back to stage 1 | Was a bug in this app (the viewed stage clamped instead of following verified progress) | Fixed; covered by a regression test |
 | A teammate sees a stage as verified but has no way onward | Was a bug: the proceed control was gated on local state the teammate had never built, so it showed "✓ Verified" with no button | Fixed. A verified stage now always offers a way forward, and teammates are carried along automatically |
 | The last stage opens saying the vent valve is already spent | Was a bug: local stage state persisted across playthroughs with no run or version scoping | Fixed. Persisted state is now discarded unless it belongs to this run and schema version |
+| A new team starts in rooms the previous team left behind | Was a bug: local room state outlived the run | Fixed. The app records which run its stored state belongs to and wipes it when the escape room's start time changes. See §3c |

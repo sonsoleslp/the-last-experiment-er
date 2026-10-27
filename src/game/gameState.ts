@@ -155,6 +155,22 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 export const GAME_STATE_KEY = 'TLE_GAME_STATE';
 
 /**
+ * The run this stored state belongs to, kept as its own key.
+ *
+ * Escapp identifies a run by the escape room's start time. When a new team
+ * starts, that changes, and everything the previous team built locally must go:
+ * otherwise the new team walks into an open cabinet, a running pump and a
+ * spent vent valve.
+ *
+ * The Escapp client has its own mechanism for this (it fires
+ * onErRestartCallback when the start time changes), but it cannot be the only
+ * line of defence. It early-returns in preview mode, and it only fires when the
+ * client happens to be told about the new state. Comparing this marker on every
+ * boot is independent of all that.
+ */
+export const RUN_MARKER_KEY = 'TLE_RUN_ID';
+
+/**
  * Schema version of the persisted blob. BUMP THIS whenever a field changes
  * meaning, not just when one is added or removed.
  *

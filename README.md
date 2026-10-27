@@ -192,8 +192,11 @@ not a different modal one.
   `ready` flag is advisory, never a gate: it used to be gated on local state,
   which stranded teammates in a room their team had already finished.
 
-Local stage state is persisted with a schema version and a run id, so a
-previous playthrough's machinery can never leak into a fresh one.
+Local stage state is persisted with a schema version and a **run id** (Escapp's
+escape room start time), so a previous playthrough's machinery can never leak
+into a fresh one. When the start time changes, the app wipes its local room
+state: two independent guards do this, because the Escapp client's own restart
+callback early-returns in preview mode and so cannot be the only one.
 
 ### Two behaviours worth knowing about
 

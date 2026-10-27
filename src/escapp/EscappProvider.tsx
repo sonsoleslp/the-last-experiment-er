@@ -26,6 +26,7 @@ import {
 } from 'react';
 import { createMockAdapter } from './mockAdapter';
 import { createProductionAdapter, escappClientAvailable } from './productionAdapter';
+import { GAME_STATE_KEY, RUN_MARKER_KEY } from '../game/gameState';
 import { LAST_PUZZLE_ID, PUZZLES, puzzleForStage } from './puzzles';
 import type { EscappAdapter, EscappStatus, EscappStorage, SubmitResult } from './types';
 
@@ -196,10 +197,20 @@ export const EscappProvider = ({ children }: { children: ReactNode }) => {
     });
 
     adapter.onRestart(() => {
-      // The teacher restarted the room. Clear our local exploration state and
-      // reload so every component re-initialises from an empty slate.
+      /*
+       * The escape room was restarted: Escapp saw the start time change and
+       * told us. Clear everything this browser built locally and reload, so
+       * every component re-initialises from an empty slate.
+       *
+       * The run marker goes too. GameProvider also compares that marker on
+       * boot, which is the independent check that catches a new run even when
+       * this callback never fires (it does not fire in preview mode, for
+       * instance). Clearing it here keeps the two from disagreeing.
+       */
       try {
-        adapter.storage()?.removeSetting('TLE_GAME_STATE');
+        const store = adapter.storage();
+        store?.removeSetting(GAME_STATE_KEY);
+        store?.removeSetting(RUN_MARKER_KEY);
         sessionStorage.clear();
       } catch {
         /* ignore */
