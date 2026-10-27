@@ -1,0 +1,1072 @@
+/* ==========================================================================
+   THE LAST EXPERIMENT: environment & equipment styles
+   ========================================================================== */
+
+/* ---------------------------------------------------------- hotspots ----- */
+
+/*
+ * Hotspots are real buttons layered over the scene SVG in percentage
+ * coordinates. They carry a glowing ring until examined, so the room shows
+ * what is left to investigate without any explanatory text on the page.
+ */
+.hotspot {
+  position: absolute;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  transition: border-color 0.18s, background 0.18s;
+}
+.hotspot:hover, .hotspot:focus-visible {
+  border-color: var(--cyan);
+  background: rgba(42, 230, 255, 0.1);
+  box-shadow: 0 0 18px rgba(42, 230, 255, 0.35), inset 0 0 18px rgba(42, 230, 255, 0.12);
+}
+.hotspot-label {
+  transform: translateY(120%);
+  padding: 3px 8px;
+  background: rgba(4, 3, 12, 0.96);
+  border: 1px solid var(--cyan);
+  box-shadow: 0 0 14px rgba(42, 230, 255, 0.3);
+  border-radius: 3px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--cyan); text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0; transition: opacity 0.16s;
+  pointer-events: none;
+}
+.hotspot:hover .hotspot-label, .hotspot:focus-visible .hotspot-label { opacity: 1; }
+
+/* Unexamined marker; the room's own to-do list. */
+.hotspot-pip {
+  position: absolute; top: 5px; right: 5px;
+  width: 7px; height: 7px;
+  background: var(--magenta);
+  box-shadow: 0 0 4px var(--magenta), 0 0 14px var(--magenta-glow);
+  animation: pip 2s ease-in-out infinite;
+}
+.hotspot[data-seen='true'] .hotspot-pip { display: none; }
+@keyframes pip { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* ------------------------------------------------- in-scene proceed bar -- */
+
+/* Floats over the bottom of the scene instead of adding page height. */
+.proceed {
+  position: absolute; left: 50%; bottom: 14px;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 14px;
+  max-width: calc(100% - 28px);
+  background: rgba(10, 14, 22, 0.94);
+  border: 1px solid var(--green-dim);
+  border-radius: 999px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  animation: rise 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.proceed-text {
+  font-size: 12.5px; color: var(--text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Transient in-scene feedback: consequences, warnings, confirmations. */
+.toast {
+  position: absolute; left: 14px; right: 14px; bottom: 14px;
+  padding: 11px 14px;
+  background: rgba(10, 14, 22, 0.96);
+  border: 1px solid var(--edge);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  animation: rise 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
+  display: flex; gap: 11px; align-items: flex-start;
+}
+.toast[data-tone='ok'] { border-left-color: var(--green); }
+.toast[data-tone='bad'] { border-left-color: var(--red); }
+.toast[data-tone='warn'] { border-left-color: var(--amber); }
+.toast[data-tone='info'] { border-left-color: var(--cyan); }
+.toast-body { flex: 1; min-width: 0; }
+.toast-body b { display: block; font-size: 12px; letter-spacing: 0.08em; margin-bottom: 2px; }
+.toast[data-tone='ok'] .toast-body b { color: var(--green); }
+.toast[data-tone='bad'] .toast-body b { color: var(--red); }
+.toast[data-tone='warn'] .toast-body b { color: var(--amber); }
+.toast[data-tone='info'] .toast-body b { color: var(--cyan); }
+.toast-body p { margin: 0; font-size: 12.5px; color: var(--text-dim); line-height: 1.45; }
+.toast-close {
+  flex: none; width: 22px; height: 22px; padding: 0;
+  display: grid; place-items: center;
+  background: transparent; border: 1px solid var(--edge);
+  border-radius: 4px; color: var(--text-faint); font-size: 11px;
+}
+.toast-close:hover { color: var(--text); border-color: var(--metal); }
+
+/* ------------------------------------------------------------- modal ----- */
+
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 24px;
+  background: rgba(3, 5, 9, 0.84);
+  backdrop-filter: blur(3px);
+  animation: fade 0.18s ease-out;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  width: 100%; max-width: 620px;
+  max-height: calc(100dvh - 48px);
+  display: flex; flex-direction: column;
+  animation: rise 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.modal-wide { max-width: 940px; }
+/* Only the body scrolls, and only if a document really is long. */
+.modal > .panel-body { overflow: auto; min-height: 0; }
+@keyframes rise { from { transform: translateY(14px) scale(0.985); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.modal-close {
+  margin-left: auto;
+  width: 28px; height: 28px; padding: 0;
+  display: grid; place-items: center;
+  background: transparent; border: 1px solid var(--edge);
+  border-radius: var(--radius); color: var(--text-dim);
+}
+.modal-close:hover { color: var(--text); border-color: var(--metal); }
+
+/* ----------------------------------------------------------- documents --- */
+
+.doc {
+  background: var(--paper);
+  color: var(--paper-ink);
+  border-radius: 3px;
+  padding: 24px 28px;
+  max-height: calc(100dvh - 110px);
+  overflow: auto;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+  font-family: 'Iowan Old Style', Georgia, serif;
+  line-height: 1.65;
+}
+.doc-letterhead {
+  padding-bottom: 10px; margin-bottom: 18px;
+  border-bottom: 2px solid var(--paper-ink);
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+  color: var(--paper-ink-dim); text-transform: uppercase;
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.doc h2 { font-size: 19px; margin-bottom: 12px; font-family: var(--sans); }
+.doc p { margin: 0 0 11px; font-size: 14.5px; }
+.doc p:last-child { margin-bottom: 0; }
+
+/* Callout paragraphs; the specification lines that carry the mathematics. */
+.doc-callout {
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: rgba(34, 32, 26, 0.07);
+  border-left: 3px solid var(--paper-ink);
+  font-family: var(--mono); font-size: 14px; letter-spacing: 0.01em;
+}
+
+/* The "typed on a 1990s lab terminal" look for stage 1's computer. */
+.terminal {
+  background: #02100a;
+  border: 1px solid #17a06a;
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  font-family: var(--mono); font-size: 13.5px; line-height: 1.75;
+  color: #3dffa8;
+  text-shadow: 0 0 4px #3dffa8, 0 0 16px rgba(61, 255, 168, 0.45);
+  max-height: 62vh; overflow: auto;
+}
+.terminal .t-head { color: #c9fff0; letter-spacing: 0.18em; margin-bottom: 14px; }
+.terminal .t-alert { color: #ff6e90; text-shadow: 0 0 4px #ff6e90, 0 0 16px rgba(255, 110, 144, 0.45); }
+.terminal .t-dim { color: #2a9e6c; }
+.terminal p { margin: 0 0 11px; }
+
+/* ------------------------------------------------------------ keypad ----- */
+
+.keypad { display: grid; gap: 14px; justify-items: center; }
+
+.keypad-display {
+  display: flex; gap: 10px;
+}
+.keypad-digit {
+  width: 52px; height: 64px;
+  display: grid; place-items: center;
+  background: var(--bg-inset);
+  border: 1px solid var(--magenta-dim);
+  border-radius: var(--radius);
+  font-family: var(--mono); font-size: 30px; font-weight: 600;
+  color: var(--magenta);
+  text-shadow: 0 0 6px var(--magenta), 0 0 22px var(--magenta-glow);
+}
+.keypad-digit[data-empty='true'] { color: var(--text-faint); text-shadow: none; }
+
+.keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.keypad-key {
+  width: 58px; height: 48px;
+  background: linear-gradient(180deg, var(--bg-raised), var(--bg-panel));
+  border: 1px solid var(--metal);
+  border-radius: var(--radius);
+  font-family: var(--mono); font-size: 17px; font-weight: 600;
+}
+.keypad-key:hover:not(:disabled) {
+  border-color: var(--cyan); color: var(--cyan);
+  box-shadow: 0 0 14px rgba(42, 230, 255, 0.3);
+}
+.keypad-key:active:not(:disabled) { transform: translateY(1px); }
+
+.keypad[data-shake='true'] { animation: shake 0.36s ease-in-out; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  45% { transform: translateX(6px); }
+  70% { transform: translateX(-3px); }
+}
+
+/* ---------------------------------------------------------- inventory ---- */
+
+.inventory {
+  display: flex; align-items: center; gap: 7px;
+  height: var(--inv-h);
+  padding: 0 16px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--edge);
+  flex: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  z-index: 20;
+}
+.inventory-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  color: var(--text-faint); text-transform: uppercase; margin-right: 4px;
+}
+.inv-slot {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  padding: 5px 10px;
+  background: var(--bg-inset);
+  border: 1px solid var(--metal);
+  border-radius: var(--radius);
+  font-size: 12px; letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+.inv-slot:hover { border-color: var(--cyan-dim); color: var(--cyan); }
+.inv-slot .glyph { font-size: 15px; line-height: 1; }
+.inv-empty { font-size: 12px; color: var(--text-faint); font-style: italic; }
+
+/* ------------------------------------------------------------- pump ------ */
+
+.pump-dial { display: grid; gap: 18px; justify-items: center; }
+
+.dial-track {
+  display: flex; gap: 6px;
+}
+.dial-detent {
+  width: 46px; padding: 10px 0;
+  display: grid; gap: 6px; justify-items: center;
+  background: var(--bg-inset);
+  border: 1px solid var(--metal);
+  border-radius: var(--radius);
+  font-family: var(--mono); font-size: 15px; font-weight: 600;
+  color: var(--text-dim);
+}
+.dial-detent:hover:not(:disabled) { border-color: var(--cyan-dim); color: var(--cyan); }
+.dial-detent[data-active='true'] {
+  border-color: var(--cyan); color: var(--cyan);
+  background: rgba(42, 230, 255, 0.12);
+  box-shadow: 0 0 22px rgba(42, 230, 255, 0.35), inset 0 0 14px rgba(42, 230, 255, 0.12);
+  text-shadow: 0 0 10px var(--cyan-glow);
+}
+.dial-detent .tick { width: 2px; height: 10px; background: currentColor; opacity: 0.6; }
+
+/* Animated coolant pipe: dash flow speed scales with delivered flow rate. */
+.pipe-flow { stroke-dasharray: 9 11; animation: flow 1s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -20; } }
+
+/* ------------------------------------------------------------- graph ----- */
+
+.graph { width: 100%; height: auto; display: block; }
+.graph-grid { stroke: var(--edge); stroke-width: 1; }
+.graph-axis { stroke: var(--metal-light); stroke-width: 1.5; }
+.graph-curve { fill: none; stroke: var(--cyan); stroke-width: 2.5; filter: drop-shadow(0 0 8px var(--cyan)); }
+.graph-tangent { stroke: var(--magenta); stroke-width: 2; stroke-dasharray: 6 5; filter: drop-shadow(0 0 6px var(--magenta-glow)); }
+.graph-limit { stroke: var(--red); stroke-width: 1.5; stroke-dasharray: 5 5; opacity: 0.8; }
+.graph-label { font-family: var(--mono); font-size: 10px; fill: var(--text-faint); letter-spacing: 0.08em; }
+.graph-point { fill: var(--magenta); stroke: var(--bg-deep); stroke-width: 2; filter: drop-shadow(0 0 7px var(--magenta-glow)); }
+
+/* --------------------------------------------------------- data table --- */
+
+.dtable { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; }
+.dtable th, .dtable td {
+  padding: 9px 11px; text-align: left;
+  border-bottom: 1px solid var(--edge);
+}
+.dtable th {
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+}
+.dtable tbody tr:hover { background: rgba(79, 214, 232, 0.04); }
+.dtable tbody tr[data-selected='true'] { background: rgba(79, 214, 232, 0.1); }
+.dtable td.ok { color: var(--green); }
+.dtable td.bad { color: var(--red); }
+
+/* ----------------------------------------------------- release console -- */
+
+.interlock-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 15px;
+  background: var(--bg-inset);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+}
+.interlock-row + .interlock-row { margin-top: 10px; }
+.interlock-row[data-thrown='true'] { border-color: var(--green-dim); background: rgba(84, 224, 138, 0.06); }
+
+/* A physical-feeling toggle switch. */
+.switch {
+  position: relative; flex: none;
+  width: 54px; height: 28px; padding: 0;
+  background: var(--bg-void);
+  border: 1px solid var(--metal);
+  border-radius: 999px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: linear-gradient(180deg, var(--metal-light), var(--metal));
+  transition: transform 0.2s, background 0.2s;
+}
+.switch[aria-checked='true'] { background: rgba(84, 224, 138, 0.2); border-color: var(--green-dim); }
+.switch[aria-checked='true']::after { transform: translateX(26px); background: var(--green); }
+
+.interlock-text { flex: 1; min-width: 0; }
+.interlock-text b { display: block; font-size: 13px; letter-spacing: 0.04em; }
+.interlock-text span { font-size: 12px; color: var(--text-dim); }
+
+/* The final authorisation lever. */
+.lever-housing {
+  display: grid; justify-items: center; gap: 14px;
+  padding: 26px;
+  background: var(--bg-inset);
+  border: 1px solid var(--metal);
+  border-radius: var(--radius-lg);
+}
+.lever {
+  position: relative;
+  width: 108px; height: 168px;
+  background: linear-gradient(180deg, #11161f, #080b12);
+  border: 2px solid var(--metal);
+  border-radius: 10px;
+  padding: 0;
+  overflow: hidden;
+}
+.lever:disabled { opacity: 0.45; }
+.lever-slot {
+  position: absolute; left: 50%; top: 18px; bottom: 18px;
+  width: 10px; margin-left: -5px;
+  background: var(--bg-void);
+  border-radius: 999px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.9);
+}
+.lever-handle {
+  position: absolute; left: 50%; top: 16px;
+  width: 58px; height: 40px; margin-left: -29px;
+  background: linear-gradient(180deg, var(--magenta), var(--magenta-dim));
+  border: 1px solid #6b1340;
+  border-radius: 4px;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.7), 0 0 22px var(--magenta-glow);
+  transition: top 0.5s cubic-bezier(0.3, 0.1, 0.3, 1);
+}
+.lever[data-pulled='true'] .lever-handle { top: 112px; background: linear-gradient(180deg, var(--green), var(--green-dim)); border-color: #1d5c39; }
+.lever:not(:disabled):hover .lever-handle { filter: brightness(1.15); }
+
+/* ------------------------------------------------------------- hints ----- */
+
+.hint-item {
+  padding: 13px 15px;
+  background: var(--bg-inset);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--amber-dim);
+  border-radius: var(--radius);
+  font-size: 13.5px;
+}
+.hint-item + .hint-item { margin-top: 10px; }
+.hint-item .hint-n {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+  color: var(--amber); text-transform: uppercase; display: block; margin-bottom: 5px;
+}
+
+/* --------------------------------------------------------- connection --- */
+
+.conn-banner {
+  display: flex; align-items: center; gap: 10px;
+  height: 36px; flex: none;
+  padding: 0 16px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--edge);
+  overflow: hidden;
+}
+.conn-banner > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conn-banner[data-tone='bad'] { background: rgba(255, 77, 88, 0.12); color: #ffc2c6; }
+.conn-banner[data-tone='warn'] { background: rgba(242, 181, 69, 0.11); color: #ffe2ab; }
+
+.boot-screen {
+  height: 100%; overflow: auto;
+  display: grid; place-content: center; justify-items: center; gap: 18px;
+  padding: 40px; text-align: center;
+}
+.boot-screen h1 { font-size: 20px; letter-spacing: 0.2em; }
+.boot-screen p { color: var(--text-dim); max-width: 56ch; margin: 0; }
+
+.spinner {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--edge); border-top-color: var(--cyan);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ------------------------------------------------------------- outro ----- */
+
+.outro { display: grid; gap: 20px; justify-items: center; text-align: center; padding: 50px 24px; }
+.outro h1 { font-size: 32px; letter-spacing: 0.04em; color: var(--green); }
+.outro .outro-body { max-width: 66ch; color: var(--text-dim); }
+.outro .outro-body p { margin: 0 0 12px; }
+
+/* ------------------------------------------------------------- intro ----- */
+
+/*
+ * The opening cinematic. Fills the viewport exactly: like every other screen
+ * in the game, it never scrolls.
+ */
+.intro {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-void);
+  overflow: hidden;
+}
+
+.intro-video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+.intro-stage {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Vignettes crossfade as the narration moves between beats. */
+.vignette {
+  width: min(100%, calc(100dvh * 16 / 9));
+  height: auto;
+  animation: vignette-in 1s ease-out;
+}
+@keyframes vignette-in { from { opacity: 0; transform: scale(1.015); } to { opacity: 1; transform: none; } }
+
+/* The title gate shown before playback starts. */
+.intro-gate {
+  position: relative; z-index: 2;
+  display: grid; justify-items: center; gap: 20px;
+  padding: 36px 28px;
+  max-width: 660px;
+  text-align: center;
+  background: rgba(5, 7, 12, 0.82);
+  backdrop-filter: blur(2px);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-lg);
+}
+
+.intro-title { display: grid; gap: 10px; justify-items: center; }
+.intro-kicker {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.24em;
+  color: var(--cyan-dim); text-transform: uppercase;
+}
+.intro-title h1 {
+  display: grid; gap: 8px; justify-items: center;
+  font-family: var(--mono);
+  font-size: clamp(26px, 4.4vw, 42px);
+  letter-spacing: 0.12em;
+  line-height: 1.05;
+  color: var(--text);
+  /* Chromatic split: cyan left, magenta right. */
+  text-shadow:
+    -2px 0 0 rgba(42, 230, 255, 0.55),
+    2px 0 0 rgba(255, 46, 136, 0.55),
+    0 0 26px rgba(42, 230, 255, 0.25);
+  animation: glitch 6.5s steps(1) infinite;
+}
+@keyframes glitch {
+  0%, 92%, 100% { transform: none; }
+  93% { transform: translateX(-2px) skewX(-1.2deg); }
+  94% { transform: translateX(2px); }
+  95% { transform: none; }
+  97% { transform: translateX(1px) skewX(0.8deg); }
+  98% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-title h1 { animation: none; }
+}
+.intro-title h1 em {
+  font-style: normal;
+  font-size: clamp(13px, 1.7vw, 17px);
+  letter-spacing: 0.34em;
+  color: var(--magenta);
+  text-shadow: 0 0 4px var(--magenta), 0 0 20px var(--magenta-glow);
+}
+
+.intro-begin { padding: 14px 30px; font-size: 14px; }
+
+.intro-note {
+  margin: 0; max-width: 52ch;
+  font-size: 12px; line-height: 1.5; color: var(--text-faint);
+}
+.intro-note strong { color: var(--text-dim); }
+
+.intro-skip {
+  position: absolute; right: 18px; bottom: 16px;
+  padding: 6px 14px;
+  background: rgba(10, 14, 22, 0.8);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+  color: var(--text-faint); text-transform: uppercase;
+  z-index: 3;
+}
+.intro-skip:hover { color: var(--text); border-color: var(--metal); }
+.intro-gate .intro-skip { position: static; justify-self: center; }
+
+/* Subtitle-style captions; the story never depends on hearing the audio. */
+.intro-caption {
+  position: absolute; left: 50%; bottom: 68px;
+  transform: translateX(-50%);
+  width: min(78ch, calc(100% - 64px));
+  padding: 14px 20px;
+  background: rgba(4, 3, 12, 0.9);
+  border-left: 3px solid var(--magenta);
+  box-shadow: 0 0 30px rgba(255, 46, 136, 0.12);
+  border-radius: var(--radius);
+  font-size: clamp(14px, 1.65vw, 18px);
+  line-height: 1.5;
+  color: var(--text);
+  text-align: center;
+  z-index: 3;
+  animation: caption-in 0.45s ease-out;
+}
+@keyframes caption-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+.intro-progress {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+  background: var(--bg-inset); z-index: 3;
+}
+.intro-progress span {
+  display: block; height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 12px var(--cyan-glow);
+  transition: width 0.12s linear;
+}
+
+/* -------------------------------------------------- pre-start interlock -- */
+
+/*
+ * The pump will not start until the operator declares the flow they expect.
+ * Styled as part of the machine, not as a quiz field.
+ */
+.prestart {
+  position: relative;
+  width: 100%;
+  padding: 11px 13px;
+  background: var(--bg-inset);
+  border: 1px solid var(--magenta-dim);
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 26px rgba(255, 46, 136, 0.06);
+}
+.prestart-label {
+  display: block;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em;
+  color: var(--magenta); text-transform: uppercase;
+  text-shadow: 0 0 12px var(--magenta-glow);
+  margin-bottom: 7px;
+}
+.prestart-row { display: flex; align-items: center; gap: 8px; }
+.prestart-input {
+  flex: 1; min-width: 0;
+  padding: 8px 11px;
+  background: var(--bg-void);
+  border: 1px solid var(--metal);
+  border-radius: 4px;
+  color: var(--cyan);
+  font-family: var(--mono); font-size: 19px; font-weight: 600;
+  text-align: right;
+  text-shadow: 0 0 10px var(--cyan-glow);
+}
+.prestart-input::placeholder { color: var(--text-faint); font-weight: 400; }
+.prestart-input:focus-visible { border-color: var(--cyan); box-shadow: var(--focus); }
+.prestart-unit {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--text-faint); flex: none;
+}
+.prestart-help {
+  margin: 7px 0 0;
+  font-size: 11.5px; line-height: 1.4; color: var(--text-faint);
+}
+
+/* "The formula lives elsewhere" pointer beside the flow log. */
+.log-note {
+  display: flex; gap: 9px; align-items: flex-start;
+  margin-top: 10px;
+  padding: 9px 11px;
+  background: rgba(79, 214, 232, 0.06);
+  border: 1px solid var(--cyan-dim);
+  border-radius: var(--radius);
+}
+.log-note p { margin: 0; font-size: 12px; line-height: 1.45; color: var(--text-dim); }
+.log-note strong { color: var(--cyan); }
+
+/* Channel restored confirmation, stage 3. */
+.channel-ok {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 10px 12px;
+  background: rgba(84, 224, 138, 0.07);
+  border: 1px solid var(--green-dim);
+  border-radius: var(--radius);
+}
+.channel-ok > span { color: var(--green); font-family: var(--mono); font-weight: 700; }
+.channel-ok p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--text-dim); }
+.channel-ok strong { color: var(--green); }
+
+/* Pinned calibration equation in the pump console. Not a plot: see the
+   comment in Stage2Cooling for why the curve is never drawn here. */
+.curve-ref {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--bg-inset);
+  border: 1px solid var(--cyan-dim);
+  border-radius: var(--radius);
+}
+.curve-ref-head {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em;
+  color: var(--cyan-dim); text-transform: uppercase;
+}
+.curve-ref-eq {
+  margin: 6px 0 5px;
+  font-size: 17px; font-weight: 600; color: var(--cyan);
+  text-shadow: 0 0 18px var(--cyan-glow);
+}
+.curve-ref-sub { font-size: 11px; color: var(--text-faint); line-height: 1.4; }
+
+/* The toast's self-dismiss countdown, so the timing is visible not surprising. */
+.toast { position: absolute; overflow: hidden; }
+.toast-timer {
+  position: absolute; left: 0; bottom: 0; height: 2px;
+  background: currentColor; opacity: 0.5;
+  transition: width 0.1s linear;
+}
+.toast[data-tone='ok'] .toast-timer { background: var(--green); }
+.toast[data-tone='bad'] .toast-timer { background: var(--red); }
+.toast[data-tone='warn'] .toast-timer { background: var(--amber); }
+.toast[data-tone='info'] .toast-timer { background: var(--cyan); }
+
+/* Read-only mission record in the release controller: continuity, not a quiz. */
+.record { margin-top: 14px; }
+.record summary {
+  cursor: pointer;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  color: var(--text-faint); text-transform: uppercase;
+}
+.record summary:hover { color: var(--text-dim); }
+.record ul {
+  margin: 9px 0 0; padding-left: 20px;
+  font-size: 12px; line-height: 1.6; color: var(--text-dim);
+}
+
+/* Stage 3 data logger: the two readings and their average, shown on purpose. */
+.sensor-log {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--bg-inset);
+  border: 1px solid var(--amber-dim);
+  border-radius: var(--radius);
+}
+.sensor-log-head {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em;
+  color: var(--amber); text-transform: uppercase;
+}
+.sensor-log table { width: 100%; border-collapse: collapse; margin: 7px 0; }
+.sensor-log th, .sensor-log td {
+  padding: 3px 0; text-align: left;
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  color: var(--text-dim);
+}
+.sensor-log td { text-align: right; color: var(--text); }
+.sensor-log-avg {
+  padding-top: 7px; border-top: 1px solid var(--edge);
+  font-size: 12px; color: var(--text-dim);
+}
+.sensor-log-avg strong { color: var(--amber); font-size: 13px; }
+.sensor-log p { margin: 6px 0 0; font-size: 11px; line-height: 1.4; color: var(--text-faint); }
+
+/* Stage 4: the conditions, stated but not solved. */
+.conditions {
+  padding: 11px 13px;
+  background: var(--bg-inset);
+  border: 1px solid var(--cyan-dim);
+  border-radius: var(--radius);
+}
+.conditions-head {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em;
+  color: var(--cyan); text-transform: uppercase;
+}
+.conditions ol {
+  margin: 8px 0 0; padding-left: 20px;
+  font-size: 12.5px; line-height: 1.7; color: var(--text-dim);
+}
+.conditions strong { color: var(--text); }
+.conditions p {
+  margin: 8px 0 0; padding-top: 7px; border-top: 1px solid var(--edge);
+  font-size: 11.5px; color: var(--text-faint);
+}
+.conditions p strong { color: var(--cyan); }
+
+/* Stage 4: rehearse any time you like. */
+.rehearsal {
+  padding: 10px 12px;
+  background: var(--bg-inset);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+}
+.rehearsal-head {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em;
+  color: var(--text-faint); text-transform: uppercase; margin-bottom: 8px;
+}
+.rehearsal p { margin: 8px 0 0; font-size: 11px; line-height: 1.45; color: var(--text-faint); }
+
+/* ------------------------------------------------------------ ID cards --- */
+
+/*
+ * Physical-feeling facility cards, at roughly credit-card proportions
+ * (85.6 x 54 mm, so 1.585:1). The flip is a 3D rotation with both faces in
+ * the DOM; the reduced-motion rule at the top of index.css collapses the
+ * transition to instant without breaking it.
+ */
+.idcard-wrap { display: grid; gap: 14px; justify-items: center; }
+
+.idcard-scene { perspective: 1400px; width: 100%; max-width: 380px; }
+
+.idcard {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.585;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.idcard[data-flipped='true'] { transform: rotateY(180deg); }
+
+.idcard-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 10px;
+  padding: 11px 13px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+}
+
+/* Front: dark laminate with a neon edge. */
+.idcard-front {
+  background:
+    linear-gradient(135deg, #171233 0%, #0d0a22 55%, #140f2c 100%);
+  border: 1px solid var(--metal-light);
+}
+.idcard-front::after {
+  /* holographic sheen */
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(112deg, transparent 38%, rgba(42, 230, 255, 0.1) 48%, rgba(255, 46, 136, 0.09) 54%, transparent 64%);
+}
+.idcard[data-kind='access'] .idcard-front {
+  border-color: var(--magenta-dim);
+  background: linear-gradient(135deg, #2a0d22 0%, #14081a 55%, #230b1e 100%);
+}
+/* The red stripe that marks an override card. */
+.idcard[data-kind='access'] .idcard-front::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0; right: 0; width: 9px;
+  background: repeating-linear-gradient(135deg, var(--magenta) 0 7px, #6b1340 7px 14px);
+  opacity: 0.85;
+}
+
+.idcard-head {
+  display: flex; flex-direction: column; gap: 1px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.idcard-org {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 0.16em;
+  color: var(--cyan);
+}
+.idcard[data-kind='access'] .idcard-org { color: var(--magenta); }
+.idcard-title {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+.idcard-body { flex: 1; display: flex; gap: 11px; padding: 9px 0; min-height: 0; }
+
+.idcard-photo {
+  height: 100%; width: auto; flex: none;
+  border: 1px solid var(--metal-light);
+  border-radius: 3px;
+}
+
+.idcard-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.idcard-holder {
+  font-family: var(--mono); font-size: 14px; letter-spacing: 0.06em;
+  color: var(--text);
+}
+.idcard-role {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 0.08em;
+  color: var(--text-faint); margin-top: 2px;
+}
+
+/* The number the whole stage turns on. Set large, with room to spare. */
+.idcard-number { margin-top: auto; }
+.idcard-number span {
+  display: block;
+  font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.18em;
+  color: var(--text-faint);
+}
+.idcard-number b {
+  font-family: var(--mono); font-size: 32px; font-weight: 700; line-height: 1;
+  color: var(--amber);
+  text-shadow: 0 0 5px var(--amber), 0 0 22px rgba(255, 197, 61, 0.4);
+  letter-spacing: 0.04em;
+}
+.idcard[data-kind='access'] .idcard-number b {
+  color: var(--magenta);
+  text-shadow: 0 0 5px var(--magenta), 0 0 22px var(--magenta-glow);
+}
+
+.idcard-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+.idcard-barcode { width: 120px; height: 18px; color: var(--text-dim); flex: none; }
+
+/* Back: magstripe and the handwritten giveaway. */
+.idcard-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #100d26 0%, #0a0818 100%);
+  border: 1px solid var(--metal);
+  gap: 9px;
+}
+.idcard-stripe {
+  height: 34px; margin: 2px -13px 0;
+  background: linear-gradient(180deg, #05040c, #15122c 40%, #05040c);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.idcard-smallprint {
+  margin: 0;
+  font-family: var(--mono); font-size: 7px; letter-spacing: 0.08em; line-height: 1.5;
+  color: var(--text-faint);
+}
+.idcard-backnote {
+  font-size: 10.5px; line-height: 1.45; color: var(--text-dim);
+}
+
+/* Biro, by someone who should not have written this down. */
+.idcard-scrawl {
+  flex: 1;
+  display: grid; place-items: center;
+  font-family: 'Bradley Hand', 'Segoe Script', 'Comic Sans MS', cursive;
+  font-size: 17px; line-height: 1.3;
+  color: #6fa8ff;
+  text-align: center;
+  transform: rotate(-2.2deg);
+  padding: 0 8px;
+}
+
+/* ------------------------------------------------------- tangent tool --- */
+
+.tangent { display: grid; gap: 10px; }
+
+.tangent-modes { display: flex; gap: 7px; }
+.tangent-modes .btn { flex: 1; }
+
+.tangent-slider { display: grid; gap: 6px; }
+.tangent-slider > span {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em;
+  color: var(--text-faint); text-transform: uppercase;
+}
+.tangent-slider > span b { color: var(--cyan); font-size: 14px; letter-spacing: 0; }
+
+/* A chunky, obviously grabbable slider; this is the main control of the stage. */
+.tangent-slider input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  background: transparent;
+  cursor: grab;
+}
+.tangent-slider input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  background: linear-gradient(90deg, var(--magenta-dim), var(--cyan-dim));
+  border-radius: 999px;
+}
+.tangent-slider input[type='range']::-moz-range-track {
+  height: 6px;
+  background: linear-gradient(90deg, var(--magenta-dim), var(--cyan-dim));
+  border-radius: 999px;
+}
+.tangent-slider input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px; height: 20px; margin-top: -7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  border: 2px solid var(--bg-void);
+  box-shadow: 0 0 14px var(--cyan-glow);
+}
+.tangent-slider input[type='range']::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--cyan);
+  border: 2px solid var(--bg-void);
+  box-shadow: 0 0 14px var(--cyan-glow);
+}
+.tangent-slider input[type='range']:focus-visible { outline: none; }
+.tangent-slider input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: var(--focus); }
+.tangent-slider input[type='range']:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.tangent-feedback {
+  margin: 0;
+  padding: 9px 11px;
+  background: var(--bg-inset);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--magenta);
+  border-radius: var(--radius);
+  font-size: 12.5px; line-height: 1.5; color: var(--text-dim);
+}
+.tangent-feedback[data-ok='true'] {
+  border-left-color: var(--green);
+  background: rgba(43, 255, 158, 0.06);
+  color: var(--text);
+}
+.tangent-feedback b { color: var(--amber); }
+
+/* ---------------------------------------------------- intro animation --- */
+
+/*
+ * A slow push-in on each vignette, so even the quietest beat is never a still
+ * frame. Beats that animate their own camera move in SVG (the chamber) opt out
+ * by not taking the vignette-push class.
+ */
+.vignette-push { animation: vignette-in 1s ease-out, vignette-push 14s ease-out forwards; }
+@keyframes vignette-push {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+
+/* Film grain over the whole cinematic. */
+.intro::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  opacity: 0.05;
+  background-image: repeating-radial-gradient(
+    circle at 17% 29%, rgba(255,255,255,0.5) 0 0.6px, transparent 0.6px 2.4px
+  );
+  background-size: 160px 160px;
+  animation: grain 0.9s steps(3) infinite;
+}
+@keyframes grain {
+  0% { background-position: 0 0; }
+  33% { background-position: -40px 30px; }
+  66% { background-position: 30px -20px; }
+  100% { background-position: 0 0; }
+}
+
+/* An occasional horizontal tear across the frame, like a bad signal. */
+.intro-stage::after {
+  content: '';
+  position: absolute; left: 0; right: 0; height: 12%;
+  background: linear-gradient(180deg, transparent, rgba(42, 230, 255, 0.07), transparent);
+  pointer-events: none;
+  animation: tear 9s ease-in-out infinite;
+}
+@keyframes tear {
+  0%, 68%, 100% { opacity: 0; top: 30%; }
+  70% { opacity: 1; top: 18%; }
+  74% { opacity: 0.6; top: 62%; }
+  78% { opacity: 0; top: 80%; }
+}
+
+/* Captions rise in rather than appearing. */
+.intro-caption { animation: caption-in 0.55s cubic-bezier(0.2, 0.8, 0.3, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* SVG SMIL is handled in JS (useReducedMotion); these are the CSS parts. */
+  .vignette-push { animation: none; }
+  .intro::after,
+  .intro-stage::after { animation: none; display: none; }
+}
+
+/* The "why does the peak matter" explainer in the pump console. */
+.why {
+  margin-top: 10px;
+  padding: 9px 11px;
+  background: var(--bg-inset);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--cyan-dim);
+  border-radius: var(--radius);
+}
+.why summary {
+  cursor: pointer;
+  font-size: 12px; letter-spacing: 0.02em;
+  color: var(--cyan);
+}
+.why summary:hover { color: var(--text); }
+.why p {
+  margin: 8px 0 0;
+  font-size: 12px; line-height: 1.55; color: var(--text-dim);
+}
+.why strong { color: var(--text); }
+
+/* Teammate progress banner shares the connection-banner chrome. */
+.conn-banner[data-tone='ok'] {
+  background: rgba(43, 255, 158, 0.1);
+  color: #b9ffe0;
+}
+
+/*
+ * Shell-level notification. Positioned like the in-scene toast but owned by
+ * the app shell, so the stage can change underneath it: that is what lets a
+ * teammate read the message before their scene catches up.
+ */
+.toast-shell {
+  position: fixed;
+  left: 50%; bottom: 60px;
+  transform: translateX(-50%);
+  width: min(640px, calc(100% - 48px));
+  z-index: 55;
+}
+.toast-shell .toast { position: relative; left: auto; right: auto; bottom: auto; }
+
+/* Standing instruction above the tangent tool. */
+.tangent-task {
+  margin: 0;
+  padding: 9px 11px;
+  background: rgba(42, 230, 255, 0.06);
+  border: 1px solid var(--cyan-dim);
+  border-radius: var(--radius);
+  font-size: 12px; line-height: 1.55; color: var(--text-dim);
+}
+.tangent-task strong { color: var(--cyan); }
+.tangent-slider > span em {
+  font-style: normal;
+  color: var(--text-faint);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.tangent-feedback b { color: var(--green); }
+.tangent-feedback strong { color: var(--text); }

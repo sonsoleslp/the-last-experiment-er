@@ -1,0 +1,459 @@
+/* ==========================================================================
+   THE LAST EXPERIMENT: design system
+   Cinematic underground research facility: charcoal surfaces, cold cyan
+   instrumentation, amber caution, red emergency. Dark-only by design (it is a
+   laboratory at night during a power emergency), but every status is carried
+   by text and shape as well as colour.
+   ========================================================================== */
+
+:root {
+  /* Surfaces: near-black with a violet cast, like a CRT in a dark room. */
+  --bg-void: #04030c;
+  --bg-deep: #070615;
+  --bg-panel: #0c0a1e;
+  --bg-panel-2: #120f2a;
+  --bg-raised: #1a1538;
+  --bg-inset: #060513;
+
+  /* Metal / structure, tinted violet rather than neutral grey. */
+  --metal: #2e2a52;
+  --metal-light: #453f72;
+  --edge: #241f45;
+
+  /* Neon instrumentation. */
+  --cyan: #2ae6ff;
+  --cyan-dim: #1b8aa6;
+  --cyan-glow: rgba(42, 230, 255, 0.55);
+  --magenta: #ff2e88;
+  --magenta-dim: #a01a56;
+  --magenta-glow: rgba(255, 46, 136, 0.5);
+  --green: #2bff9e;
+  --green-dim: #15996a;
+  --amber: #ffc53d;
+  --amber-dim: #9a7416;
+  --red: #ff3860;
+  --red-dim: #991f3a;
+  --red-glow: rgba(255, 56, 96, 0.5);
+
+  /* Text, cooled slightly blue. */
+  --text: #e4ecff;
+  --text-dim: #9aa6cc;
+  --text-faint: #5f6792;
+
+  /* Paper (documents) stays warm, for contrast against all the neon. */
+  --paper: #e8e2d2;
+  --paper-edge: #cfc7b2;
+  --paper-ink: #22201a;
+  --paper-ink-dim: #555044;
+
+  --radius: 4px;
+  --radius-lg: 8px;
+  --mono: 'SFMono-Regular', 'JetBrains Mono', 'Menlo', 'Consolas', monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --focus: 0 0 0 2px var(--bg-deep), 0 0 0 4px var(--cyan), 0 0 16px var(--cyan-glow);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg-void);
+  /* Faint perspective grid, the cheapest cyberpunk signifier there is. */
+  background-image:
+    linear-gradient(rgba(42, 230, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 230, 255, 0.035) 1px, transparent 1px);
+  background-size: 46px 46px, 46px 46px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Visible focus everywhere: school machines are keyboard-navigated a lot. */
+:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--radius); }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: 0.02em; }
+h1 { font-family: var(--mono); letter-spacing: 0.06em; }
+
+.mono { font-family: var(--mono); }
+
+/* Screen-reader-only text: the text alternative for visual-only clues. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------------------------------------------------------------- layout -- */
+
+/*
+ * Fixed-viewport shell. Nothing in the game scrolls: the scene is the page.
+ *
+ * Height is budgeted explicitly rather than left to the flex algorithm, so the
+ * 16:9 scene can be sized with min() and is GUARANTEED to fit the viewport on
+ * any laptop. --chrome is the total height of everything that is not the
+ * scene (top bar + HUD + inventory, plus the connection banner when shown).
+ */
+.app-shell {
+  --topbar-h: 44px;
+  --hud-h: 40px;
+  --inv-h: 42px;
+  --banner-h: 0px;
+  --chrome: calc(var(--topbar-h) + var(--hud-h) + var(--inv-h) + var(--banner-h) + 16px);
+
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #141c2b 0%, transparent 60%),
+    var(--bg-void);
+}
+
+.app-shell[data-banner='true'] { --banner-h: 36px; }
+
+/* Neon bloom over the whole shell, and a vignette to sell the CRT. */
+.app-shell::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 3;
+  background: radial-gradient(130% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* The scene: centred, never scrolled, never letterboxed. */
+.scene {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 12px;
+}
+
+/*
+ * The frame shrink-wraps the SVG exactly, which is what keeps the percentage
+ * hotspots aligned with the artwork. Width is the smaller of the available
+ * width and whatever width makes the 16:9 scene fit the remaining height.
+ */
+.scene-frame {
+  position: relative;
+  width: min(calc(100% - 4px), calc((100dvh - var(--chrome)) * 16 / 9));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--edge);
+  overflow: hidden;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
+}
+
+.scene-frame > svg { display: block; width: 100%; height: auto; }
+
+/* ------------------------------------------------------------- top bar --- */
+
+.topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--topbar-h);
+  padding: 0 16px;
+  background: linear-gradient(180deg, var(--bg-panel-2), var(--bg-panel));
+  border-bottom: 1px solid var(--edge);
+  flex: none;
+  z-index: 20;
+}
+/* Magenta/cyan scan line under the chrome. */
+.topbar::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, var(--magenta), var(--cyan) 55%, transparent);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.topbar-title { display: flex; flex-direction: column; line-height: 1.1; }
+.topbar-title b {
+  font-family: var(--mono);
+  font-size: 12px; letter-spacing: 0.18em;
+  color: var(--text);
+  text-shadow: 0 0 14px var(--cyan-glow);
+}
+.topbar-title span { font-size: 9px; letter-spacing: 0.18em; color: var(--text-faint); }
+
+.topbar-spacer { flex: 1; }
+
+/* ----------------------------------------------------------------- HUD --- */
+
+/*
+ * One line, always: where you are, what you are trying to do, the live
+ * instrument values that matter, and the hint affordance. This replaces the
+ * stacked "objective / status / evidence" panels that used to push the scene
+ * off the screen.
+ */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--hud-h);
+  padding: 0 16px;
+  background: var(--bg-inset);
+  border-bottom: 1px solid var(--edge);
+  flex: none;
+  overflow: hidden;
+}
+
+.hud-stage {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--magenta);
+  text-shadow: 0 0 12px var(--magenta-glow);
+  flex: none;
+}
+
+.hud-objective {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Compact live instrument value in the HUD. */
+.hud-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 9px;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--bg-panel);
+}
+.hud-stat span { color: var(--text-faint); letter-spacing: 0.1em; font-size: 9.5px; }
+.hud-stat b { font-size: 13px; color: var(--cyan); font-weight: 600; }
+.hud-stat[data-tone='ok'] b { color: var(--green); }
+.hud-stat[data-tone='warn'] b { color: var(--amber); }
+.hud-stat[data-tone='bad'] b { color: var(--red); }
+
+/* Stage progress rail */
+.rail { display: flex; align-items: center; gap: 1px; flex: none; }
+.rail-node {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 7px;
+  border: 1px solid var(--edge);
+  background: var(--bg-inset);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 9.5px; letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+.rail-node[data-state='done'] { color: var(--green); border-color: var(--green-dim); background: rgba(84, 224, 138, 0.07); }
+.rail-node[data-state='current'] { color: var(--cyan); border-color: var(--cyan-dim); background: rgba(79, 214, 232, 0.08); }
+.rail-node[data-state='locked'] { opacity: 0.45; }
+.rail-node .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex: none; }
+.rail-node[data-state='locked'] .dot { background: none; border: 1px solid currentColor; }
+.rail-sep { width: 8px; height: 1px; background: var(--edge); flex: none; }
+
+/* ------------------------------------------------------------- panels ---- */
+
+.panel {
+  position: relative;
+  background: linear-gradient(180deg, var(--bg-panel-2), var(--bg-panel));
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 40px rgba(42, 230, 255, 0.03),
+    0 8px 30px rgba(0, 0, 0, 0.6);
+}
+/* Corner brackets, so panels read as hardware rather than cards. */
+.panel::before,
+.panel::after {
+  content: '';
+  position: absolute; width: 12px; height: 12px;
+  border-color: var(--cyan); opacity: 0.5; pointer-events: none;
+}
+.panel::before { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: var(--radius-lg); }
+.panel::after { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: var(--radius-lg); }
+
+.panel-head h3 { color: var(--cyan); text-shadow: 0 0 12px var(--cyan-glow); }
+
+.panel-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--edge);
+}
+.panel-head h3 { font-size: 12px; letter-spacing: 0.16em; color: var(--text-dim); text-transform: uppercase; }
+.panel-body { padding: 16px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 900px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* -------------------------------------------------------------- buttons -- */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px;
+  background: linear-gradient(180deg, var(--bg-raised), var(--bg-panel));
+  border: 1px solid var(--metal);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+  transition: border-color 0.15s, background 0.15s, transform 0.08s;
+}
+.btn:hover:not(:disabled) { border-color: var(--metal-light); background: linear-gradient(180deg, #263048, var(--bg-raised)); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.42; }
+
+.btn-primary {
+  border-color: var(--cyan-dim); color: var(--cyan);
+  background: linear-gradient(180deg, rgba(42, 230, 255, 0.16), rgba(42, 230, 255, 0.04));
+  text-shadow: 0 0 10px var(--cyan-glow);
+}
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--cyan);
+  background: linear-gradient(180deg, rgba(42, 230, 255, 0.26), rgba(42, 230, 255, 0.08));
+  box-shadow: 0 0 18px rgba(42, 230, 255, 0.28), inset 0 0 14px rgba(42, 230, 255, 0.1);
+}
+
+.btn-danger {
+  border-color: var(--magenta-dim); color: var(--magenta);
+  background: linear-gradient(180deg, rgba(255, 46, 136, 0.16), rgba(255, 46, 136, 0.04));
+  text-shadow: 0 0 10px var(--magenta-glow);
+}
+.btn-danger:hover:not(:disabled) {
+  border-color: var(--magenta);
+  box-shadow: 0 0 18px rgba(255, 46, 136, 0.3), inset 0 0 14px rgba(255, 46, 136, 0.1);
+}
+
+.btn-ghost { background: transparent; border-color: var(--edge); color: var(--text-dim); }
+.btn-ghost:hover:not(:disabled) { color: var(--text); border-color: var(--metal); }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ----------------------------------------------------------- readouts ---- */
+
+.readout {
+  background: var(--bg-inset);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.readout-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+  color: var(--text-faint); text-transform: uppercase; margin-bottom: 6px;
+}
+.readout-value {
+  font-family: var(--mono); font-size: 30px; font-weight: 600;
+  color: var(--cyan);
+  text-shadow: 0 0 6px var(--cyan), 0 0 26px var(--cyan-glow);
+  line-height: 1.1;
+}
+.readout-value.is-warn { color: var(--amber); text-shadow: 0 0 22px rgba(242,181,69,0.3); }
+.readout-value.is-bad { color: var(--red); text-shadow: 0 0 22px var(--red-glow); }
+.readout-value.is-good { color: var(--green); text-shadow: 0 0 22px rgba(84,224,138,0.3); }
+.readout-unit { font-size: 13px; color: var(--text-faint); margin-left: 6px; letter-spacing: 0.08em; }
+
+/* Status chips carry an icon/word, never colour alone. */
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--edge); border-radius: 999px;
+  background: var(--bg-inset);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--text-dim); text-transform: uppercase;
+}
+.chip[data-tone='ok'] { color: var(--green); border-color: var(--green-dim); }
+.chip[data-tone='warn'] { color: var(--amber); border-color: var(--amber-dim); }
+.chip[data-tone='bad'] { color: var(--red); border-color: var(--red-dim); }
+.chip[data-tone='info'] { color: var(--cyan); border-color: var(--cyan-dim); }
+
+/* ------------------------------------------------------------- alerts ---- */
+
+.alert {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--edge);
+  background: var(--bg-inset);
+  font-size: 13.5px;
+}
+.alert b { display: block; margin-bottom: 3px; letter-spacing: 0.06em; }
+.alert[data-tone='bad'] { border-color: var(--red-dim); background: rgba(255,77,88,0.08); }
+.alert[data-tone='bad'] b { color: var(--red); }
+.alert[data-tone='warn'] { border-color: var(--amber-dim); background: rgba(242,181,69,0.08); }
+.alert[data-tone='warn'] b { color: var(--amber); }
+.alert[data-tone='ok'] { border-color: var(--green-dim); background: rgba(84,224,138,0.08); }
+.alert[data-tone='ok'] b { color: var(--green); }
+.alert[data-tone='info'] { border-color: var(--cyan-dim); background: rgba(79,214,232,0.07); }
+.alert[data-tone='info'] b { color: var(--cyan); }
+.alert-icon { font-family: var(--mono); font-weight: 700; flex: none; opacity: 0.85; }
+
+/* ---------------------------------------------------------- emergency ---- */
+
+/* Slow red wash across the whole shell while the emergency is unresolved. */
+.emergency-wash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 5;
+  background:
+    radial-gradient(900px 500px at 50% 0%, var(--red-glow), transparent 70%),
+    radial-gradient(700px 420px at 100% 100%, var(--magenta-glow), transparent 72%);
+  opacity: 0; animation: wash 5.5s ease-in-out infinite;
+}
+@keyframes wash { 0%, 100% { opacity: 0.05; } 50% { opacity: 0.17; } }
+
+.scanlines {
+  position: fixed; inset: 0; pointer-events: none; z-index: 4; opacity: 0.5;
+  background: repeating-linear-gradient(
+    180deg, rgba(42, 230, 255, 0.035) 0 1px, transparent 1px 3px
+  );
+}
+
+/* A slow magenta sweep down the screen, like a refresh artefact. */
+.scanlines::after {
+  content: '';
+  position: absolute; left: 0; right: 0; height: 28%;
+  background: linear-gradient(180deg, transparent, rgba(255, 46, 136, 0.045), transparent);
+  animation: sweep 7s linear infinite;
+}
+@keyframes sweep {
+  0% { top: -30%; }
+  100% { top: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .emergency-wash { opacity: 0.1; }
+  /* No sweep, no glitch, no pulsing for reduced-motion users. */
+  .scanlines::after { display: none; }
+}
+
+/* --------------------------------------------------------- sound toggle -- */
+
+.mute-btn {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  padding: 4px 9px;
+  background: var(--bg-inset);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+.mute-btn:hover { color: var(--text); border-color: var(--metal); }
+.mute-btn[aria-pressed='false'] { color: var(--cyan); border-color: var(--cyan-dim); }
+.mute-label { font-size: 9px; }

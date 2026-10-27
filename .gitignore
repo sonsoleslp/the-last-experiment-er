@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+
+# Editor / OS noise
+.DS_Store
+.vscode/
+.idea/
+*.local
+*.log
+
+# Build metadata and test output
+*.tsbuildinfo
+coverage/
+
+# DEV-ONLY ESCAPP SETTINGS: never commit this.
+#
+# config.mjs holds your escape room's real API endpoint (and is the only place
+# a credential could end up). Copy config.example.mjs to create it. In
+# production the Escapp server injects these settings itself, so the file is
+# not needed for deployment.
+config.mjs
+.env
+.env.*
+
+# NOTE ON dist/
+#
+# The build output IS committed, so the deployable bundle is in the repo ready
+# to hand to Escapp or serve from GitHub Pages without anyone needing to run a
+# build. Regenerate it with `npm run build` and commit the result alongside any
+# source change.
+#
+# To stop tracking it instead, add `dist` below and run
+# `git rm -r --cached dist`.
